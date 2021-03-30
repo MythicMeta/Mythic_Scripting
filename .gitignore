@@ -1,0 +1,5 @@
+build/
+dist/
+mythic.egg-info/
+mythic/.DS_Store
+mythic/__pycache__/

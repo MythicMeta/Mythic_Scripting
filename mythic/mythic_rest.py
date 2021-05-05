@@ -296,6 +296,8 @@ class Operator:
         deleted: bool = None,
         view_mode: str = None,
         base_disabled_commands: str = None,
+        failed_login_count: int = None,
+        last_failed_login_timestamp: str = None
     ):
         self._username = username
         self._admin = admin
@@ -311,6 +313,8 @@ class Operator:
         self._password = password
         self._view_utc_time = view_utc_time
         self._deleted = deleted
+        self._failed_login_count = failed_login_count
+        self._last_failed_login_timestamp = last_failed_login_timestamp
         if self._current_operation is not None:
             self._current_operation.id = current_operation_id
         if view_mode in ["spectator", "operator", "developer", None]:
@@ -469,12 +473,12 @@ class PayloadType:
         author: str = None,
         note: str = None,
         supports_dynamic_loading: bool = None,
-        translation_container: str = None,
         deleted: bool = None,
         build_parameters: List[Dict] = None,
         id: int = None,
         c2_profiles: List[Union["C2Profile", Dict]] = None,
         commands: List[Union["Command", str, Dict]] = None,
+        translation_container: dict = None
     ):
         self._ptype = ptype
         self._mythic_encrypts = mythic_encrypts
@@ -482,6 +486,7 @@ class PayloadType:
         self._creation_time = creation_time
         self._file_extension = file_extension
         self._wrapper = wrapper
+        self._translation_container = translation_container
         if isinstance(wrapped, PayloadType) or wrapped is None:
             self._wrapped = wrapped
         else:
@@ -729,13 +734,7 @@ class Command:
         payload_type: Union[PayloadType, str] = None,
         creation_time: str = None,
         version: int = None,
-        is_exit: bool = None,
-        is_file_browse: bool = None,
-        is_process_list: bool = None,
-        is_download_file: bool = None,
-        is_remove_file: bool = None,
-        is_upload_file: bool = None,
-        is_link: bool = None,
+        supported_ui_features: str = None,
         attributes: str = None,
         opsec: dict = None,
         author: str = None,
@@ -748,19 +747,13 @@ class Command:
         self._help_cmd = help_cmd
         self._description = description
         self._cmd = cmd
+        self._supported_ui_features = supported_ui_features
         if isinstance(payload_type, PayloadType) or payload_type is None:
             self._payload_type = payload_type
         else:
             self._payload_type = PayloadType(ptype=payload_type)
         self._creation_time = creation_time
         self._version = version
-        self._is_exit = is_exit
-        self._is_file_browse = is_file_browse
-        self._is_process_list = is_process_list
-        self._is_download_file = is_download_file
-        self._is_remove_file = is_remove_file
-        self._is_upload_file = is_upload_file
-        self._is_link = is_link
         self._attributes = attributes
         self._opsec = opsec
         self._author = author
@@ -863,62 +856,6 @@ class Command:
         self._version = version
 
     @property
-    def is_exit(self) -> bool:
-        return self._is_exit
-
-    @is_exit.setter
-    def is_exit(self, is_exit):
-        self._is_exit = is_exit
-
-    @property
-    def is_file_browse(self) -> bool:
-        return self._is_file_browse
-
-    @is_file_browse.setter
-    def is_file_browse(self, is_file_browse):
-        self._is_file_browse = is_file_browse
-
-    @property
-    def is_process_list(self) -> bool:
-        return self._is_process_list
-
-    @is_process_list.setter
-    def is_process_list(self, is_process_list):
-        self._is_process_list = is_process_list
-
-    @property
-    def is_download_file(self) -> bool:
-        return self._is_download_file
-
-    @is_download_file.setter
-    def is_download_file(self, is_download_file):
-        self._is_download_file = is_download_file
-
-    @property
-    def is_remove_file(self) -> bool:
-        return self._is_remove_file
-
-    @is_remove_file.setter
-    def is_remove_file(self, is_remove_file):
-        self._is_remove_file = is_remove_file
-
-    @property
-    def is_upload_file(self) -> bool:
-        return self._is_upload_file
-
-    @is_upload_file.setter
-    def is_upload_file(self, is_upload_file):
-        self._is_upload_file = is_upload_file
-
-    @property
-    def is_link(self) -> bool:
-        return self._is_link
-
-    @is_link.setter
-    def is_link(self, is_link):
-        self._is_link = is_link
-
-    @property
     def attributes(self) -> bool:
         return self._attributes
 
@@ -1001,6 +938,7 @@ class CommandParameters:
         choices_are_all_commands: bool = None,
         choices_are_loaded_commands: bool = None,
         required: bool = None,
+        ui_position: int = None,
         id: int = None,
     ):
         if isinstance(command, Command) or command is None:
@@ -1021,6 +959,7 @@ class CommandParameters:
         self._description = description
         self._supported_agents = supported_agents
         self._default_value = default_value
+        self._ui_position = ui_position
         if isinstance(choices, List) or choices is None:
             self._choices = choices
         else:
@@ -1976,6 +1915,7 @@ class Task:
         status: str = None,
         task_status: str = None,  # sometimes this is set to not conflict with overall status message
         original_params: str = None,
+        display_params: str = None,
         comment: str = None,
         comment_operator: Union[Operator, str] = None,
         completed: bool = None,
@@ -1986,7 +1926,6 @@ class Task:
         status_timestamp_processing: str = None,
         operation: str = None,
         responses: List[Union["Response", Dict]] = None,
-        display_params: str = None,
         stdout: str = None,
         stderr: str = None,
         token: dict = None,
@@ -2015,6 +1954,7 @@ class Task:
         self.status_timestamp_processing = status_timestamp_processing
         self.operation = operation
         self.completed = completed
+        self._display_params = display_params
         self.payload_type = payload_type
         if isinstance(callback, Callback) or callback is None:
             self._callback = callback
@@ -2435,7 +2375,8 @@ class Payload:
         build_container: str = None,
         build_phase: str = None,
         build_message: str = None,
-        build_error: str = None,
+        build_stderr: str = None,
+        build_stdout: str = None,
         callback_alert: bool = None,
         auto_generated: bool = None,
         task: Union[Task, Dict] = None,
@@ -2452,7 +2393,8 @@ class Payload:
         self._callback_alert = callback_alert
         self._auto_generated = auto_generated
         self._build_parameters = build_parameters
-        self._build_error = build_error
+        self._build_stderr = build_stderr
+        self._build_stdout = build_stdout
         self._os = os
         if isinstance(operator, Operator) or operator is None:
             self._operator = operator
@@ -2553,14 +2495,6 @@ class Payload:
     @os.setter
     def os(self, os):
         self._os = os
-
-    @property
-    def build_error(self) -> str:
-        return self._build_error
-
-    @build_error.setter
-    def build_error(self, build_error):
-        self._build_error = build_error
 
     @property
     def tag(self) -> str:
@@ -3762,7 +3696,7 @@ class Mythic:
         self._http = "http://" if not ssl else "https://"
         self._ws = "ws://" if not ssl else "wss://"
         self._global_timeout = global_timeout if global_timeout is not None else -1
-        self._scripting_version = 2
+        self._scripting_version = 3
 
     def to_json(self):
         r = {}
@@ -5119,6 +5053,8 @@ class Mythic:
         data = {"username": self.username, "password": self.password, "scripting_version": self._scripting_version}
         resp = await self.post_json(url, data)
         if resp.response_code == 200:
+            if resp.status == "error":
+                raise Exception("Failed to log in: " + resp.response["error"])
             self._access_token = resp.response["access_token"]
             self._refresh_token = resp.response["refresh_token"]
             return resp

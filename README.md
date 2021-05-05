@@ -16,6 +16,8 @@ Version 0.0.13 of the `mythic` package supports version 2.1.* of the Mythic proj
 
 Version 0.0.15 of the `mythic` package supports version 2.2.1 of the Mythic project.
 
+Version 0.0.19 of the `mythic` package supports version 2.2.2 of the Mythic project (reports as version "3")
+
 ```
 from mythic import mythic_rest
 mythic = mythic_rest.Mythic(

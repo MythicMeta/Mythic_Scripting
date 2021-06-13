@@ -24,6 +24,7 @@ class APIToken:
         active: bool = None,
         id: int = None,
         operator: Union["Operator", str] = None,
+        **kwargs,
     ):
         self._token_type = token_type
         self._token_value = token_value
@@ -122,7 +123,8 @@ class Operation:
         icon_emoji: str = None,
         icon_url: str = None,
         members: List[Union["Operator", Dict[str, str], str]] = None,
-        webhook_message: str = None
+        webhook_message: str = None,
+        **kwargs,
     ):
         self._name = name
         if isinstance(admin, Operator) or admin is None:
@@ -297,7 +299,8 @@ class Operator:
         view_mode: str = None,
         base_disabled_commands: str = None,
         failed_login_count: int = None,
-        last_failed_login_timestamp: str = None
+        last_failed_login_timestamp: str = None,
+        **kwargs,
     ):
         self._username = username
         self._admin = admin
@@ -478,7 +481,8 @@ class PayloadType:
         id: int = None,
         c2_profiles: List[Union["C2Profile", Dict]] = None,
         commands: List[Union["Command", str, Dict]] = None,
-        translation_container: dict = None
+        translation_container: dict = None,
+        **kwargs,
     ):
         self._ptype = ptype
         self._mythic_encrypts = mythic_encrypts
@@ -742,6 +746,8 @@ class Command:
         deleted: bool = None,
         id: int = None,
         params: List[Union["CommandParameters", Dict[str, str]]] = None,
+        script_only: bool = False,
+        **kwargs,
     ):
         self._needs_admin = needs_admin
         self._help_cmd = help_cmd
@@ -759,6 +765,7 @@ class Command:
         self._author = author
         self._delted = deleted
         self._mythic_version = mythic_version
+        self._script_only = script_only
         self._id = id
         if params is not None and params != []:
             if isinstance(params, list):
@@ -940,6 +947,7 @@ class CommandParameters:
         required: bool = None,
         ui_position: int = None,
         id: int = None,
+        **kwargs,
     ):
         if isinstance(command, Command) or command is None:
             self._command = command
@@ -1140,6 +1148,7 @@ class C2Profile:
         id: int = None,
         ptype: List[Union[PayloadType, str]] = None,
         parameters: Dict = None,
+        **kwargs,
     ):  # list of payload types that support this c2 profile
         self._name = name
         self._description = description
@@ -1319,6 +1328,7 @@ class C2ProfileParameters:
         callback: Union["Callback", int] = None,
         payload: Union["Payload", str] = None,
         crypto_type: bool = None,
+        **kwargs,
     ):
         if isinstance(c2_profile, C2Profile) or c2_profile is None:
             self._c2_profile = c2_profile
@@ -1545,10 +1555,13 @@ class Callback:
         build_parameters: [dict] = None,
         payload_uuid: str = None,
         payload_name: str = None,
-        path: [str] = None
+        path: [str] = None,
+        process_name: str = None,
+        **kwargs,
     ):
         self._init_callback = init_callback
         self._last_checkin = last_checkin
+        self._process_name = process_name
         self._user = user
         self._host = host
         self._pid = pid
@@ -1939,6 +1952,12 @@ class Task:
         opsec_post_message: str = None,
         opsec_post_bypass_role: str = None,
         opsec_post_bypass_user: Union[Operator, str] = None,
+        parent_task: int = None,
+        subtask_callback_function: str = None,
+        group_callback_function: str = None,
+        completed_callback_function: str = None,
+        subtask_group_name: str = None,
+        **kwargs
     ):
         if isinstance(command, Command) or command is None:
             self._command = command
@@ -1952,6 +1971,11 @@ class Task:
         self.status_timestamp_processed = status_timestamp_processed
         self.status_timestamp_submitted = status_timestamp_submitted
         self.status_timestamp_processing = status_timestamp_processing
+        self.parent_task = parent_task
+        self.subtask_callback_function = subtask_callback_function
+        self.group_callback_function = group_callback_function
+        self.completed_callback_function = completed_callback_function
+        self.subtask_group_name = subtask_group_name
         self.operation = operation
         self.completed = completed
         self._display_params = display_params
@@ -2386,6 +2410,7 @@ class Payload:
         commands: List = None,
         filename: str = None,
         os: str = None,
+        **kwargs,
     ):
         self._uuid = uuid
         self._tag = tag
@@ -2703,6 +2728,7 @@ class FileMeta:
         comment: str = None,
         upload: dict = None,
         params: dict = None,
+        **kwargs,
     ):
         self._agent_file_id = agent_file_id
         self._total_chunks = total_chunks
@@ -2986,6 +3012,7 @@ class Response:
         timestamp: str = None,
         task: Union[Task, int, Dict] = None,  # JSON string of the corresponding task
         id: int = None,
+        **kwargs,
     ):
         self._response = response
         self._timestamp = timestamp
@@ -3072,6 +3099,7 @@ class Credential:
         comment: str = None,
         deleted: bool = None,
         new: bool = None,
+        **kwargs,
     ):
         self._type = type
         if isinstance(task, Task) or task is None:
@@ -3249,6 +3277,7 @@ class Keylog:
         host: str = None,
         id: int = None,
         callback: Union[Callback, Dict] = None,
+        **kwargs,
     ):
         self._keystrokes = keystrokes
         self._window = window
@@ -3451,6 +3480,7 @@ class EventMessage:
         alerts: List[Dict] = None,
         source: str = None,
         count: int = None,
+        **kwargs,
     ):
         self._timestamp = timestamp
         self._message = message

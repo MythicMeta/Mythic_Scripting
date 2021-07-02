@@ -41,11 +41,19 @@ class APIToken:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -155,11 +163,19 @@ class Operation:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -331,11 +347,19 @@ class Operator:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -528,11 +552,19 @@ class PayloadType:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -782,11 +814,19 @@ class Command:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -980,11 +1020,19 @@ class CommandParameters:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -1177,11 +1225,19 @@ class C2Profile:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -1363,11 +1419,19 @@ class C2ProfileParameters:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -1632,11 +1696,19 @@ class Callback:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -1902,11 +1974,19 @@ class TaskFile:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -2045,11 +2125,19 @@ class Task:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -2410,6 +2498,7 @@ class Payload:
         commands: List = None,
         filename: str = None,
         os: str = None,
+        selected_os: str = None,
         **kwargs,
     ):
         self._uuid = uuid
@@ -2421,6 +2510,7 @@ class Payload:
         self._build_stderr = build_stderr
         self._build_stdout = build_stdout
         self._os = os
+        self.selected_os = selected_os
         if isinstance(operator, Operator) or operator is None:
             self._operator = operator
         else:
@@ -2483,17 +2573,26 @@ class Payload:
         else:
             self._c2_profiles = None
         self._filename = filename
+        self.__dict__.update(kwargs)
 
     def to_json(self):
         r = {}
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -2771,11 +2870,19 @@ class FileMeta:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -3029,11 +3136,19 @@ class Response:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -3132,11 +3247,19 @@ class Credential:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -3302,11 +3425,19 @@ class Keylog:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -3423,11 +3554,19 @@ class DisabledCommandsProfile:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -3506,11 +3645,19 @@ class EventMessage:
         for k in vars(self):
             if getattr(self, k) is not None:
                 try:
-                    r[k[1:]] = getattr(self, k)
+                    if k[0] == "_":
+                        r[k[1:]] = getattr(self, k)
+                    else:
+                        r[k] = getattr(self, k)
                 except:
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    if k[0] == "_":
+                        r[k[1:]] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
+                    else:
+                        r[k] = json.dumps(
+                            getattr(self, k), default=lambda o: o.to_json()
+                        )
         return r
 
     def __str__(self):
@@ -3732,9 +3879,19 @@ class Mythic:
         r = {}
         for k in vars(self):
             try:
-                r[k[1:]] = getattr(self, k)
+                if k[0] == "_":
+                    r[k[1:]] = getattr(self, k)
+                else:
+                    r[k] = getattr(self, k)
             except:
-                r[k[1:]] = json.dumps(getattr(self, k))
+                if k[0] == "_":
+                    r[k[1:]] = json.dumps(
+                        getattr(self, k), default=lambda o: o.to_json()
+                    )
+                else:
+                    r[k] = json.dumps(
+                        getattr(self, k), default=lambda o: o.to_json()
+                    )
         return r
 
     def __str__(self):
@@ -4442,6 +4599,10 @@ class Mythic:
             data['build_parameters'] = payload.build_parameters
         if payload.wrapped_payload is not None:
             data['wrapped_payload'] = payload.wrapped_payload.uuid
+        if payload.os is not None:
+            data['selected_os'] = payload.os
+        elif payload.selected_os is not None:
+            data["selected_os"] = payload.selected_os
         url = "{}{}:{}/api/v{}/payloads/create".format(
             self._http, self._server_ip, self._server_port, self._server_api_version
         )
@@ -5081,6 +5242,7 @@ class Mythic:
         """
         url = "{}{}:{}/auth".format(self._http, self._server_ip, self._server_port)
         data = {"username": self.username, "password": self.password, "scripting_version": self._scripting_version}
+        print("[*] Connecting to Mythic as scripting_version {}".format(self._scripting_version))
         resp = await self.post_json(url, data)
         if resp.response_code == 200:
             if resp.status == "error":

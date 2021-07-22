@@ -26,15 +26,16 @@ class APIToken:
         operator: Union["Operator", str] = None,
         **kwargs,
     ):
-        self._token_type = token_type
-        self._token_value = token_value
-        self._creation_time = creation_time
-        self._active = active
-        self._id = id
+        self.token_type = token_type
+        self.token_value = token_value
+        self.creation_time = creation_time
+        self.active = active
+        self.id = id
         if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
+            self.operator = operator
         else:
-            self._operator = Operator(username=operator)
+            self.operator = Operator(username=operator)
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -59,63 +60,6 @@ class APIToken:
     def __str__(self):
         return json.dumps(self.to_json())
 
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, APIToken):
-            return self._token_value == other.token_value
-        return False
-
-    @property
-    def token_type(self) -> str:
-        return self._token_type
-
-    @token_type.setter
-    def token_type(self, token_type):
-        self._token_type = token_type
-
-    @property
-    def token_value(self) -> str:
-        return self._token_value
-
-    @token_value.setter
-    def token_value(self, token_value):
-        self._token_value = token_value
-
-    @property
-    def creation_time(self) -> str:
-        return self._creation_time
-
-    @creation_time.setter
-    def creation_time(self, creation_time):
-        self._creation_time = creation_time
-
-    @property
-    def active(self) -> bool:
-        return self._active
-
-    @active.setter
-    def active(self, active):
-        self._active = active
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def operator(self) -> "Operator":
-        return self._operator
-
-    @operator.setter
-    def operator(self, operator):
-        if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
-        else:
-            self._operator = Operator(username=operator)
-
 
 class Operation:
     def __init__(
@@ -123,7 +67,6 @@ class Operation:
         name: str = None,
         admin: Union["Operator", str] = None,
         complete: bool = None,
-        AESPSK: str = None,
         webhook: str = None,
         id: int = None,
         channel: str = None,
@@ -134,29 +77,28 @@ class Operation:
         webhook_message: str = None,
         **kwargs,
     ):
-        self._name = name
         if isinstance(admin, Operator) or admin is None:
-            self._admin = admin
+            self.admin = admin
         else:
-            self._admin = Operator(username=admin)
-        self._complete = complete
-        self._AESPSK = AESPSK
-        self._webhook = webhook
-        self._channel = channel
-        self._display_name = display_name
-        self._icon_emoji = icon_emoji
-        self._icon_url = icon_url
-        self._webhook_message = webhook_message
-        self._id = id
+            self.admin = Operator(username=admin)
+        self.complete = complete
+        self.webhook = webhook
+        self.channel = channel
+        self.display_name = display_name
+        self.icon_emoji = icon_emoji
+        self.icon_url = icon_url
+        self.webhook_message = webhook_message
+        self.id = id
         if members is not None:
             if isinstance(members, list):
-                self._members = [
+                self.members = [
                     Operator(username=x) if isinstance(x, str) else Operator(**x) if isinstance(x, Dict) else x for x in members
                 ]
             else:
                 raise ValueError("members must be a list")
         else:
-            self._members = members
+            self.members = members
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -180,121 +122,6 @@ class Operation:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, Operation):
-            return self._name == other.name or (
-                self._id is not None and other.id is not None and self._id == other.id
-            )
-        return False
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self, name):
-        self._name = name
-
-    @property
-    def admin(self) -> "Operator":
-        return self._admin
-
-    @admin.setter
-    def admin(self, admin):
-        if isinstance(admin, Operator) or admin is None:
-            self._admin = admin
-        else:
-            self._admin = Operator(username=admin)
-
-    @property
-    def complete(self) -> bool:
-        return self._complete
-
-    @complete.setter
-    def complete(self, complete):
-        self._complete = complete
-
-    @property
-    def AESPSK(self) -> str:
-        return self._AESPSK
-
-    @AESPSK.setter
-    def AESPSK(self, AESPSK):
-        self._AESPSK = AESPSK
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def webhook(self) -> str:
-        return self._webhook
-
-    @webhook.setter
-    def webhook(self, webhook):
-        self._webhook = webhook
-
-    @property
-    def channel(self) -> str:
-        return self._channel
-
-    @channel.setter
-    def channel(self, channel):
-        self._channel = channel
-
-    @property
-    def display_name(self) -> str:
-        return self._display_name
-
-    @display_name.setter
-    def display_name(self, display_name):
-        self._display_name = display_name
-
-    @property
-    def icon_emoji(self) -> str:
-        return self._icon_emoji
-
-    @icon_emoji.setter
-    def icon_emoji(self, icon_emoji):
-        self._icon_emoji = icon_emoji
-
-    @property
-    def icon_url(self) -> str:
-        return self._icon_url
-
-    @icon_url.setter
-    def icon_url(self, icon_url):
-        self._icon_url = icon_url
-
-    @property
-    def webhook_message(self) -> str:
-        return self._webhook_message
-
-    @webhook_message.setter
-    def webhook_message(self, webhook_message):
-        self._webhook_message = webhook_message
-
-    @property
-    def members(self) -> List["Operator"]:
-        return self._members
-
-    @members.setter
-    def members(self, members):
-        if members is not None:
-            if isinstance(members, list):
-                self._members = [
-                    Operator(username=x) if isinstance(x, str) else Operator(**x) if isinstance(x, Dict) else x for x in members
-                ]
-            else:
-                raise ValueError("members must be a list")
-        else:
-            self._members = members
 
 
 class Operator:
@@ -318,29 +145,30 @@ class Operator:
         last_failed_login_timestamp: str = None,
         **kwargs,
     ):
-        self._username = username
-        self._admin = admin
-        self._creation_time = creation_time
-        self._last_login = last_login
-        self._active = active
+        self.username = username
+        self.admin = admin
+        self.creation_time = creation_time
+        self.last_login = last_login
+        self.active = active
         if isinstance(current_operation, Operation) or current_operation is None:
-            self._current_operation = current_operation
+            self.current_operation = current_operation
         else:
-            self._current_operation = Operation(name=current_operation)
-        self._ui_config = ui_config
-        self._id = id
-        self._password = password
-        self._view_utc_time = view_utc_time
-        self._deleted = deleted
-        self._failed_login_count = failed_login_count
-        self._last_failed_login_timestamp = last_failed_login_timestamp
-        if self._current_operation is not None:
-            self._current_operation.id = current_operation_id
+            self.current_operation = Operation(name=current_operation)
+        self.ui_config = ui_config
+        self.id = id
+        self.password = password
+        self.view_utc_time = view_utc_time
+        self.deleted = deleted
+        self.failed_login_count = failed_login_count
+        self.last_failed_login_timestamp = last_failed_login_timestamp
+        if self.current_operation is not None:
+            self.current_operation.id = current_operation_id
         if view_mode in ["spectator", "operator", "developer", None]:
-            self._view_mode = view_mode
+            self.view_mode = view_mode
         else:
             raise Exception("Bad value for view_mode")
-        self._base_disabled_commands = base_disabled_commands
+        self.base_disabled_commands = base_disabled_commands
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -364,124 +192,6 @@ class Operator:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, Operator):
-            return self._username == other.username or (
-                self._id is not None and other.id is not None and self._id == other.id
-            )
-        return False
-
-    @property
-    def username(self) -> str:
-        return self._username
-
-    @username.setter
-    def username(self, username):
-        self._username = username
-
-    @property
-    def admin(self) -> bool:
-        return self._admin
-
-    @admin.setter
-    def admin(self, admin):
-        self._admin = admin
-
-    @property
-    def creation_time(self) -> str:
-        return self._creation_time
-
-    @creation_time.setter
-    def creation_time(self, creation_time):
-        self._creation_time = creation_time
-
-    @property
-    def last_login(self) -> str:
-        return self._last_login
-
-    @last_login.setter
-    def last_login(self, last_login):
-        self._last_login = last_login
-
-    @property
-    def active(self) -> bool:
-        return self._active
-
-    @active.setter
-    def active(self, active):
-        self._active = active
-
-    @property
-    def current_operation(self) -> Operation:
-        return self._current_operation
-
-    @current_operation.setter
-    def current_operation(self, current_operation):
-        if isinstance(current_operation, Operation) or current_operation is None:
-            self._current_operation = current_operation
-        else:
-            self._current_operation = Operation(name=current_operation)
-
-    @property
-    def ui_config(self) -> str:
-        return self._ui_config
-
-    @ui_config.setter
-    def ui_config(self, ui_config):
-        self._ui_config = ui_config
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def password(self) -> str:
-        return self._password
-
-    @password.setter
-    def password(self, password):
-        self._password = password
-
-    @property
-    def view_utc_time(self) -> bool:
-        return self._view_utc_time
-
-    @view_utc_time.setter
-    def view_utc_time(self, view_utc_time):
-        self._view_utc_time = view_utc_time
-
-    @property
-    def deleted(self) -> bool:
-        return self._deleted
-
-    @deleted.setter
-    def deleted(self, deleted):
-        self._deleted = deleted
-
-    @property
-    def view_mode(self) -> str:
-        return self._view_mode
-
-    @view_mode.setter
-    def view_mode(self, view_mode):
-        if view_mode in ["spectator", "operator", "developer", None]:
-            self._view_mode = view_mode
-        else:
-            raise Exception("Bad value for view_mode")
-
-    @property
-    def base_disabled_commands(self) -> str:
-        return self._base_disabled_commands
-
-    @base_disabled_commands.setter
-    def base_disabled_commands(self, base_disabled_commands):
-        self._base_disabled_commands = base_disabled_commands
 
 
 class PayloadType:
@@ -508,35 +218,35 @@ class PayloadType:
         translation_container: dict = None,
         **kwargs,
     ):
-        self._ptype = ptype
-        self._mythic_encrypts = mythic_encrypts
-        self._translation_container = translation_container
-        self._creation_time = creation_time
-        self._file_extension = file_extension
-        self._wrapper = wrapper
-        self._translation_container = translation_container
+        self.ptype = ptype
+        self.mythic_encrypts = mythic_encrypts
+        self.translation_container = translation_container
+        self.creation_time = creation_time
+        self.file_extension = file_extension
+        self.wrapper = wrapper
+        self.translation_container = translation_container
         if isinstance(wrapped, PayloadType) or wrapped is None:
-            self._wrapped = wrapped
+            self.wrapped = wrapped
         else:
-            self._wrapped_ = PayloadType(ptype=wrapped)
-        self._supported_os = supported_os
-        self._last_heartbeat = last_heartbeat
-        self._container_running = container_running
-        self._service = service
-        self._id = id
-        self._author = author
-        self._note = note
-        self._build_parameters = build_parameters
-        self._supports_dynamic_loading = supports_dynamic_loading
-        self._deleted = deleted
+            self.wrapped_ = PayloadType(ptype=wrapped)
+        self.supported_os = supported_os
+        self.last_heartbeat = last_heartbeat
+        self.container_running = container_running
+        self.service = service
+        self.id = id
+        self.author = author
+        self.note = note
+        self.build_parameters = build_parameters
+        self.supports_dynamic_loading = supports_dynamic_loading
+        self.deleted = deleted
         if isinstance(c2_profiles, List):
-            self._c2_profiles = [
+            self.c2_profiles = [
                 C2Profile(**x) if isinstance(x, Dict) else x for x in c2_profiles
             ]
         else:
-            self._c2_profiles = c2_profiles
+            self.c2_profiles = c2_profiles
         if isinstance(commands, List):
-            self._commands = [
+            self.commands = [
                 Command(**x)
                 if isinstance(x, Dict)
                 else Command(cmd=x)
@@ -545,7 +255,8 @@ class PayloadType:
                 for x in commands
             ]
         else:
-            self._commands = commands
+            self.commands = commands
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -569,195 +280,6 @@ class PayloadType:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, PayloadType):
-            return self._ptype == other.ptype or (
-                self._id is not None and other.id is not None and self._id == other.id
-            )
-        return False
-
-    @property
-    def ptype(self) -> str:
-        return self._ptype
-
-    @ptype.setter
-    def ptype(self, ptype):
-        self._ptype = ptype
-
-    @property
-    def mythic_encrypts(self) -> bool:
-        return self._mythic_encrypts
-
-    @mythic_encrypts.setter
-    def mythic_encrypts(self, mythic_encrypts):
-        self._mythic_encrypts = mythic_encrypts
-
-    @property
-    def translation_container(self) -> str:
-        return self._translation_container
-
-    @translation_container.setter
-    def translation_container(self, translation_container):
-        self._translation_container = translation_container
-
-    @property
-    def operator(self) -> Operator:
-        return self._operator
-
-    @operator.setter
-    def operator(self, operator):
-        if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
-        else:
-            self._operator = Operator(username=operator)
-
-    @property
-    def creation_time(self) -> str:
-        return self._creation_time
-
-    @creation_time.setter
-    def creation_time(self, creation_time):
-        self._creation_time = creation_time
-
-    @property
-    def file_extension(self) -> str:
-        return self._file_extension
-
-    @file_extension.setter
-    def file_extension(self, file_extension):
-        self._file_extension = file_extension
-
-    @property
-    def wrapper(self) -> bool:
-        return self._wrapper
-
-    @wrapper.setter
-    def wrapper(self, wrapper):
-        self._wrapper = wrapper
-
-    @property
-    def wrapped(self) -> "PayloadType":
-        return self._wrapped
-
-    @wrapped.setter
-    def wrapped(self, wrapped):
-        if isinstance(wrapped, PayloadType) or wrapped is None:
-            self._wrapped = wrapped
-        else:
-            self._wrapped_ = PayloadType(ptype=wrapped)
-
-    @property
-    def supported_os(self) -> str:
-        return self._supported_os
-
-    @supported_os.setter
-    def supported_os(self, supported_os):
-        self._supported_os = supported_os
-
-    @property
-    def last_heartbeat(self) -> str:
-        return self._last_heartbeat
-
-    @last_heartbeat.setter
-    def last_heartbeat(self, last_heartbeat):
-        self._last_heartbeat = last_heartbeat
-
-    @property
-    def container_running(self) -> bool:
-        return self._container_running
-
-    @container_running.setter
-    def container_running(self, container_running):
-        self._container_running = container_running
-
-    @property
-    def service(self) -> str:
-        return self._service
-
-    @service.setter
-    def service(self, service):
-        self._service = service
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def author(self) -> str:
-        return self._author
-
-    @author.setter
-    def author(self, author):
-        self._author = author
-
-    @property
-    def note(self) -> str:
-        return self._note
-
-    @note.setter
-    def note(self, note):
-        self._note = note
-
-    @property
-    def supports_dynamic_loading(self) -> bool:
-        return self._supports_dynamic_loading
-
-    @supports_dynamic_loading.setter
-    def supports_dynamic_loading(self, supports_dynamic_loading):
-        self._supports_dynamic_loading = supports_dynamic_loading
-
-    @property
-    def deleted(self) -> bool:
-        return self._deleted
-
-    @deleted.setter
-    def deleted(self, deleted):
-        self._deleted = deleted
-
-    @property
-    def build_parameters(self) -> List[Dict]:
-        return self._build_parameters
-
-    @build_parameters.setter
-    def build_parameters(self, build_parameters):
-        self._build_parameters = build_parameters
-
-    @property
-    def c2_profiles(self) -> List["C2Profile"]:
-        return self._c2_profiles
-
-    @c2_profiles.setter
-    def c2_profiles(self, c2_profiles):
-        if isinstance(c2_profiles, List):
-            self._c2_profiles = [
-                C2Profile(**x) if isinstance(x, Dict) else x for x in c2_profiles
-            ]
-        else:
-            self._c2_profiles = c2_profiles
-
-    @property
-    def commands(self) -> List["Command"]:
-        return self._commands
-
-    @commands.setter
-    def commands(self, commands):
-        if isinstance(commands, List):
-            self._commands = [
-                Command(**x)
-                if isinstance(x, Dict)
-                else Command(cmd=x)
-                if isinstance(x, str)
-                else x
-                for x in commands
-            ]
-        else:
-            self._commands = commands
 
 
 class Command:
@@ -778,36 +300,35 @@ class Command:
         deleted: bool = None,
         id: int = None,
         params: List[Union["CommandParameters", Dict[str, str]]] = None,
-        script_only: bool = False,
         **kwargs,
     ):
-        self._needs_admin = needs_admin
-        self._help_cmd = help_cmd
-        self._description = description
-        self._cmd = cmd
-        self._supported_ui_features = supported_ui_features
+        self.needs_admin = needs_admin
+        self.help_cmd = help_cmd
+        self.description = description
+        self.cmd = cmd
+        self.supported_ui_features = supported_ui_features
         if isinstance(payload_type, PayloadType) or payload_type is None:
-            self._payload_type = payload_type
+            self.payload_type = payload_type
         else:
-            self._payload_type = PayloadType(ptype=payload_type)
-        self._creation_time = creation_time
-        self._version = version
-        self._attributes = attributes
-        self._opsec = opsec
-        self._author = author
-        self._delted = deleted
-        self._mythic_version = mythic_version
-        self._script_only = script_only
-        self._id = id
+            self.payload_type = PayloadType(ptype=payload_type)
+        self.creation_time = creation_time
+        self.version = version
+        self.attributes = attributes
+        self.opsec = opsec
+        self.author = author
+        self.deleted = deleted
+        self.mythic_version = mythic_version
+        self.id = id
         if params is not None and params != []:
             if isinstance(params, list):
-                self._params = [
+                self.params = [
                     CommandParameters(**x) if isinstance(x, Dict) else x for x in params
                 ]
             else:
                 raise ValueError("params must be a list")
         else:
-            self._params = None
+            self.params = None
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -831,139 +352,6 @@ class Command:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, Command):
-            return (
-                self._cmd == other.cmd
-                and self._payload_type.ptype == other.payload_type.ptype
-            ) or (
-                self._id is not None and other.id is not None and self._id == other.id
-            )
-        return False
-
-    @property
-    def needs_admin(self) -> bool:
-        return self._needs_admin
-
-    @needs_admin.setter
-    def needs_admin(self, needs_admin):
-        self._needs_admin = needs_admin
-
-    @property
-    def help_cmd(self) -> str:
-        return self._help_cmd
-
-    @help_cmd.setter
-    def help_cmd(self, help_cmd):
-        self._help_cmd = help_cmd
-
-    @property
-    def description(self) -> str:
-        return self._description
-
-    @description.setter
-    def description(self, description):
-        self._description = description
-
-    @property
-    def cmd(self) -> str:
-        return self._cmd
-
-    @cmd.setter
-    def cmd(self, cmd):
-        self._cmd = cmd
-
-    @property
-    def payload_type(self) -> PayloadType:
-        return self._payload_type
-
-    @payload_type.setter
-    def payload_type(self, payload_type):
-        if isinstance(payload_type, PayloadType) or payload_type is None:
-            self._payload_type = payload_type
-        else:
-            self._payload_type = PayloadType(ptype=payload_type)
-
-    @property
-    def creation_time(self) -> str:
-        return self._creation_time
-
-    @creation_time.setter
-    def creation_time(self, creation_time):
-        self._creation_time = creation_time
-
-    @property
-    def version(self) -> int:
-        return self._version
-
-    @version.setter
-    def version(self, version):
-        self._version = version
-
-    @property
-    def attributes(self) -> bool:
-        return self._attributes
-
-    @attributes.setter
-    def attributes(self, attributes):
-        self._attributes = attributes
-
-    @property
-    def opsec(self) -> dict:
-        return self._opsec
-
-    @opsec.setter
-    def opsec(self, opsec):
-        self._opsec = opsec
-
-    @property
-    def deleted(self) -> bool:
-        return self._deleted
-
-    @deleted.setter
-    def deleted(self, deleted):
-        self._deleted = deleted
-
-    @property
-    def author(self) -> str:
-        return self._author
-
-    @author.setter
-    def author(self, author):
-        self._author = author
-
-    @property
-    def mythic_version(self) -> int:
-        return self._mythic_version
-
-    @mythic_version.setter
-    def mythic_version(self, mythic_version):
-        self._mythic_version = mythic_version
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def params(self) -> List["CommandParameters"]:
-        return self._params
-
-    @params.setter
-    def params(self, params):
-        if isinstance(params, list):
-            self._params = [
-                CommandParameters(**x) if isinstance(x, Dict) else x for x in params
-            ]
-        elif params is None or params == []:
-            self._params = None
-        else:
-            raise ValueError("params must be a list")
 
 
 class CommandParameters:
@@ -990,30 +378,31 @@ class CommandParameters:
         **kwargs,
     ):
         if isinstance(command, Command) or command is None:
-            self._command = command
+            self.command = command
         else:
-            self._command = Command(id=command)
-        self._cmd = cmd
+            self.command = Command(id=command)
+        self.cmd = cmd
         if isinstance(payload_type, PayloadType) or payload_type is None:
-            self._payload_type = payload_type
+            self.payload_type = payload_type
         else:
-            self._payload_type = PayloadType(ptype=payload_type)
-        self._name = name
-        self._type = type
-        self._choice_filter_by_command_attributes = choice_filter_by_command_attributes
-        self._supported_agent_build_parameters = supported_agent_build_parameters
-        self._choices_are_all_commands = choices_are_all_commands
-        self._choices_are_loaded_commands = choices_are_loaded_commands
-        self._description = description
-        self._supported_agents = supported_agents
-        self._default_value = default_value
-        self._ui_position = ui_position
+            self.payload_type = PayloadType(ptype=payload_type)
+        self.name = name
+        self.type = type
+        self.choice_filter_by_command_attributes = choice_filter_by_command_attributes
+        self.supported_agent_build_parameters = supported_agent_build_parameters
+        self.choices_are_all_commands = choices_are_all_commands
+        self.choices_are_loaded_commands = choices_are_loaded_commands
+        self.description = description
+        self.supported_agents = supported_agents
+        self.default_value = default_value
+        self.ui_position = ui_position
         if isinstance(choices, List) or choices is None:
-            self._choices = choices
+            self.choices = choices
         else:
-            self._choices = choices.split("\n")
-        self._required = required
-        self._id = id
+            self.choices = choices.split("\n")
+        self.required = required
+        self.id = id
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -1037,147 +426,6 @@ class CommandParameters:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, CommandParameters):
-            return (
-                self._name == other.name
-                and (self._command == other.command)
-                or (self._cmd == other.cmd)
-            ) or (
-                self._id is not None and other.id is not None and self._id == other.id
-            )
-        return False
-
-    @property
-    def command(self) -> Command:
-        return self._command
-
-    @command.setter
-    def command(self, command):
-        if isinstance(command, Command) or command is None:
-            self._command = command
-        else:
-            self._command = Command(id=command)
-
-    @property
-    def choice_filter_by_command_attributes(self) -> str:
-        return self._choice_filter_by_command_attributes
-
-    @choice_filter_by_command_attributes.setter
-    def choice_filter_by_command_attributes(self, choice_filter_by_command_attributes):
-        self._choice_filter_by_command_attributes = choice_filter_by_command_attributes
-
-    @property
-    def supported_agent_build_parameters(self) -> str:
-        return self._supported_agent_build_parameters
-
-    @supported_agent_build_parameters.setter
-    def supported_agent_build_parameters(self, supported_agent_build_parameters):
-        self._supported_agent_build_parameters = supported_agent_build_parameters
-
-    @property
-    def choices_are_all_commands(self) -> bool:
-        return self._choices_are_all_commands
-
-    @choices_are_all_commands.setter
-    def choices_are_all_commands(self, choices_are_all_commands):
-        self._choices_are_all_commands = choices_are_all_commands
-
-    @property
-    def choices_are_loaded_commands(self) -> bool:
-        return self._choices_are_loaded_commands
-
-    @choices_are_loaded_commands.setter
-    def choices_are_loaded_commands(self, choices_are_loaded_commands):
-        self._choices_are_loaded_commands = choices_are_loaded_commands
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self, name):
-        self._name = name
-
-    @property
-    def type(self) -> str:
-        return self._type
-
-    @type.setter
-    def type(self, type):
-        self._type = type
-
-    @property
-    def description(self) -> str:
-        return self._description
-
-    @description.setter
-    def description(self, description):
-        self._description = description
-
-    @property
-    def supported_agents(self) -> str:
-        return self._supported_agents
-
-    @supported_agents.setter
-    def supported_agents(self, supported_agents):
-        self._supported_agents = supported_agents
-
-    @property
-    def default_value(self) -> str:
-        return self._default_value
-
-    @default_value.setter
-    def default_value(self, default_value):
-        self._default_value = default_value
-
-    @property
-    def choices(self) -> List[str]:
-        return self._choices
-
-    @choices.setter
-    def choices(self, choices):
-        if isinstance(choices, List) or choices is None:
-            self._choices = choices
-        else:
-            self._choices = choices.split("\n")
-
-    @property
-    def required(self) -> bool:
-        return self._required
-
-    @required.setter
-    def required(self, required):
-        self._required = required
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def cmd(self) -> str:
-        return self._cmd
-
-    @cmd.setter
-    def cmd(self, cmd):
-        self._cmd = cmd
-
-    @property
-    def payload_type(self) -> PayloadType:
-        return self._payload_type
-
-    @payload_type.setter
-    def payload_type(self, payload_type):
-        if isinstance(payload_type, PayloadType) or payload_type is None:
-            self._payload_type = payload_type
-        else:
-            self._payload_type = PayloadType(ptype=payload_type)
 
 
 class C2Profile:
@@ -1198,27 +446,28 @@ class C2Profile:
         parameters: Dict = None,
         **kwargs,
     ):  # list of payload types that support this c2 profile
-        self._name = name
-        self._description = description
-        self._creation_time = creation_time
-        self._running = running
-        self._last_heartbeat = last_heartbeat
-        self._container_running = container_running
-        self._id = id
-        self._author = author
-        self._is_p2p = is_p2p
-        self._is_server_routed = is_server_routed
-        self._deleted = deleted
+        self.name = name
+        self.description = description
+        self.creation_time = creation_time
+        self.running = running
+        self.last_heartbeat = last_heartbeat
+        self.container_running = container_running
+        self.id = id
+        self.author = author
+        self.is_p2p = is_p2p
+        self.is_server_routed = is_server_routed
+        self.deleted = deleted
         if ptype is not None:
             if isinstance(ptype, list):
-                self._ptype = [
+                self.ptype = [
                     PayloadType(ptype=x) if isinstance(x, str) else x for x in ptype
                 ]
             else:
                 raise ValueError("ptype must be a list")
         else:
-            self._ptype = ptype
-        self._parameters = parameters
+            self.ptype = ptype
+        self.parameters = parameters
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -1242,124 +491,6 @@ class C2Profile:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, C2Profile):
-            return self._name == other.name or (
-                self._id is not None and other.id is not None and self._id == other.id
-            )
-        return False
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self, name):
-        self._name = name
-
-    @property
-    def description(self) -> str:
-        return self._description
-
-    @description.setter
-    def description(self, description):
-        self._description = description
-
-    @property
-    def creation_time(self) -> str:
-        return self._creation_time
-
-    @creation_time.setter
-    def creation_time(self, creation_time):
-        self._creation_time = creation_time
-
-    @property
-    def running(self) -> bool:
-        return self._running
-
-    @running.setter
-    def running(self, running):
-        self._running = running
-
-    @property
-    def last_heartbeat(self) -> str:
-        return self._last_heartbeat
-
-    @last_heartbeat.setter
-    def last_heartbeat(self, last_heartbeat):
-        self._last_heartbeat = last_heartbeat
-
-    @property
-    def container_running(self) -> bool:
-        return self._container_running
-
-    @container_running.setter
-    def container_running(self, container_running):
-        self._container_running = container_running
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def ptype(self) -> List[PayloadType]:
-        return self._ptype
-
-    @ptype.setter
-    def ptype(self, ptype):
-        if isinstance(ptype, list):
-            self._ptype = [
-                PayloadType(ptype=x) if isinstance(x, str) else x for x in ptype
-            ]
-        elif ptype is None:
-            self._ptype = ptype
-        else:
-            raise ValueError("ptype must be a list")
-
-    @property
-    def author(self) -> str:
-        return self._author
-
-    @author.setter
-    def author(self, author):
-        self._author = author
-
-    @property
-    def is_p2p(self) -> bool:
-        return self._is_p2p
-
-    @is_p2p.setter
-    def is_p2p(self, is_p2p):
-        self._is_p2p = is_p2p
-
-    @property
-    def is_server_routed(self) -> bool:
-        return self._iis_server_routed
-
-    @is_server_routed.setter
-    def is_server_routed(self, is_server_routed):
-        self._is_server_routed = is_server_routed
-
-    @property
-    def deleted(self) -> bool:
-        return self._deleted
-
-    @deleted.setter
-    def deleted(self, deleted):
-        self._deleted = deleted
-    @property
-    def parameters(self) -> Dict:
-        return self._parameters
-
-    @parameters.setter
-    def parameters(self, parameters):
-        self._parameters = parameters
 
 
 class C2ProfileParameters:
@@ -1387,32 +518,33 @@ class C2ProfileParameters:
         **kwargs,
     ):
         if isinstance(c2_profile, C2Profile) or c2_profile is None:
-            self._c2_profile = c2_profile
+            self.c2_profile = c2_profile
         else:
-            self._c2_profile = C2Profile(name=c2_profile)
-        self._name = name
-        self._default_value = default_value
-        self._required = required
-        self._verifier_regex = verifier_regex
-        self._parameter_type = parameter_type
-        self._description = description
-        self._instance_name = instance_name
-        self._value = value
-        self._randomize = randomize
-        self._crypto_type = crypto_type
-        self._id = id
+            self.c2_profile = C2Profile(name=c2_profile)
+        self.name = name
+        self.default_value = default_value
+        self.required = required
+        self.verifier_regex = verifier_regex
+        self.parameter_type = parameter_type
+        self.description = description
+        self.instance_name = instance_name
+        self.value = value
+        self.randomize = randomize
+        self.crypto_type = crypto_type
+        self.id = id
         if isinstance(payload, Payload) or payload is None:
-            self._payload = payload
+            self.payload = payload
         else:
-            self._payload = Payload(uuid=payload)
+            self.payload = Payload(uuid=payload)
         if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
+            self.operation = operation
         else:
-            self._operation = Operation(name=operation)
+            self.operation = Operation(name=operation)
         if isinstance(callback, Callback) or callback is None:
-            self._callback = callback
+            self.callback = callback
         else:
-            self._callback = Callback(id=callback)
+            self.callback = Callback(id=callback)
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -1436,144 +568,6 @@ class C2ProfileParameters:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, C2ProfileParameters):
-            return self._name == other.name and self._c2_profile == other.c2_profile
-        return False
-
-    @property
-    def c2_profile(self) -> C2Profile:
-        return self._c2_profile
-
-    @c2_profile.setter
-    def c2_profile(self, c2_profile):
-        if isinstance(c2_profile, C2Profile) or c2_profile is None:
-            self._c2_profile = c2_profile
-        else:
-            self._c2_profile = C2Profile(name=c2_profile)
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self, name):
-        self._name = name
-
-    @property
-    def crypto_type(self) -> bool:
-        return self._crypto_type
-
-    @crypto_type.setter
-    def crypto_type(self, crypto_type):
-        self._crypto_type = crypto_type
-
-    @property
-    def verifier_regex(self) -> str:
-        return self._verifier_regex
-
-    @verifier_regex.setter
-    def verifier_regex(self, verifier_regex):
-        self._verifier_regex = verifier_regex
-
-    @property
-    def parameter_type(self) -> str:
-        return self._parameter_type
-
-    @parameter_type.setter
-    def parameter_type(self, parameter_type):
-        self._parameter_type = parameter_type
-
-    @property
-    def description(self) -> str:
-        return self._description
-
-    @description.setter
-    def description(self, description):
-        self._description = description
-
-    @property
-    def instance_name(self) -> str:
-        return self._instance_name
-
-    @instance_name.setter
-    def instance_name(self, instance_name):
-        self._instance_name = instance_name
-
-    @property
-    def default_value(self) -> any:
-        return self._default_value
-
-    @default_value.setter
-    def default_value(self, default_value):
-        self._default_value = default_value
-
-    @property
-    def required(self) -> bool:
-        return self._required
-
-    @required.setter
-    def required(self, required):
-        self._required = required
-
-    @property
-    def randomize(self) -> bool:
-        return self._randomize
-
-    @randomize.setter
-    def randomize(self, randomize):
-        self._randomize = randomize
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def value(self) -> any:
-        return self._value
-
-    @value.setter
-    def value(self, value):
-        self._value = value
-
-    @property
-    def payload(self) -> "Payload":
-        return self._payload
-
-    @payload.setter
-    def payload(self, payload):
-        if isinstance(payload, Payload) or payload is None:
-            self._payload = payload
-        else:
-            self._payload = Payload(uuid=payload)
-
-    @property
-    def operation(self) -> Operation:
-        return self._operation
-
-    @operation.setter
-    def operation(self, operation):
-        if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
-        else:
-            self._operation = Operation(name=operation)
-
-    @property
-    def callback(self) -> "Callback":
-        return self._callback
-
-    @callback.setter
-    def callback(self, callback):
-        if isinstance(callback, Callback) or callback is None:
-            self._callback = callback
-        else:
-            self._callback = Callback(id=callback)
 
 
 class Callback:
@@ -1623,73 +617,74 @@ class Callback:
         process_name: str = None,
         **kwargs,
     ):
-        self._init_callback = init_callback
-        self._last_checkin = last_checkin
-        self._process_name = process_name
-        self._user = user
-        self._host = host
-        self._pid = pid
-        self._ip = ip
-        self._port = port
-        self._socks_task = socks_task
-        self._domain = domain
-        self._description = description
-        self._agent_callback_id = agent_callback_id
-        self._external_ip = external_ip
-        self._payload_type_id = payload_type_id
-        self._locked_operator = locked_operator
-        self._os = os
-        self._c2_profiles = c2_profiles
-        self._loaded_commands = loaded_commands
-        self._build_parameters = build_parameters
-        self._path = path
-        self._payload_uuid = payload_uuid
-        self._payload_name = payload_name
-        self._architecture = architecture
+        self.init_callback = init_callback
+        self.last_checkin = last_checkin
+        self.process_name = process_name
+        self.user = user
+        self.host = host
+        self.pid = pid
+        self.ip = ip
+        self.port = port
+        self.socks_task = socks_task
+        self.domain = domain
+        self.description = description
+        self.agent_callback_id = agent_callback_id
+        self.external_ip = external_ip
+        self.payload_type_id = payload_type_id
+        self.locked_operator = locked_operator
+        self.os = os
+        self.c2_profiles = c2_profiles
+        self.loaded_commands = loaded_commands
+        self.build_parameters = build_parameters
+        self.path = path
+        self.payload_uuid = payload_uuid
+        self.payload_name = payload_name
+        self.architecture = architecture
         if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
+            self.operator = operator
         else:
-            self._operator = Operator(username=operator)
-        self._active = active
+            self.operator = Operator(username=operator)
+        self.active = active
         if isinstance(pcallback, Callback) or pcallback is None:
-            self._pcallback = pcallback
+            self.pcallback = pcallback
         elif pcallback == "null":
-            self._pcallback = None
+            self.pcallback = None
         else:
-            self._pcallback = Callback(id=pcallback)
+            self.pcallback = Callback(id=pcallback)
         if registered_payload is None:
-            self._registered_payload = registered_payload
+            self.registered_payload = registered_payload
         else:
-            self._registered_payload = Payload(uuid=registered_payload)
+            self.registered_payload = Payload(uuid=registered_payload)
         if isinstance(payload_type, PayloadType) or payload_type is None:
-            self._payload_type = payload_type
+            self.payload_type = payload_type
         else:
-            self._payload_type = PayloadType(ptype=payload_type)
+            self.payload_type = PayloadType(ptype=payload_type)
         if isinstance(c2_profile, C2Profile) or c2_profile is None:
-            self._c2_profile = c2_profile
+            self.c2_profile = c2_profile
         else:
-            self._c2_profile = C2Profile(name=c2_profile)
-        self._payload_description = payload_description
-        self._integrity_level = integrity_level
+            self.c2_profile = C2Profile(name=c2_profile)
+        self.payload_description = payload_description
+        self.integrity_level = integrity_level
         if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
+            self.operation = operation
         else:
-            self._operation = Operation(name=operation)
-        self._crypto_type = crypto_type
-        self._dec_key = dec_key
-        self._enc_key = enc_key
-        self._tokens = tokens
+            self.operation = Operation(name=operation)
+        self.crypto_type = crypto_type
+        self.dec_key = dec_key
+        self.enc_key = enc_key
+        self.tokens = tokens
         if isinstance(tasks, List):
-            self._tasks = [Task(**x) if isinstance(x, Dict) else x for x in tasks]
+            self.tasks = [Task(**x) if isinstance(x, Dict) else x for x in tasks]
         elif tasks is None:
-            self._tasks = tasks
+            self.tasks = tasks
         else:
-            self._tasks = [Task(**tasks) if isinstance(tasks, Dict) else tasks]
-        self._id = id
+            self.tasks = [Task(**tasks) if isinstance(tasks, Dict) else tasks]
+        self.id = id
         if supported_profiles is None:
-            self._supported_profiles = supported_profiles
+            self.supported_profiles = supported_profiles
         else:
-            self._supported_profiles = [x if isinstance(x, C2Profile) else C2Profile(**x) for x in supported_profiles]
+            self.supported_profiles = [x if isinstance(x, C2Profile) else C2Profile(**x) for x in supported_profiles]
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -1714,233 +709,15 @@ class Callback:
     def __str__(self):
         return json.dumps(self.to_json())
 
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, Callback):
-            return self._id == other.id
-        return False
-
-    @property
-    def init_callback(self) -> str:
-        return self._init_callback
-
-    @init_callback.setter
-    def init_callback(self, init_callback):
-        self._init_callback = init_callback
-
-    @property
-    def last_checkin(self) -> str:
-        return self._last_checkin
-
-    @last_checkin.setter
-    def last_checkin(self, last_checkin):
-        self._last_checkin = last_checkin
-
-    @property
-    def user(self) -> str:
-        return self._user
-
-    @user.setter
-    def user(self, user):
-        self._user = user
-
-    @property
-    def tokens(self) -> [dict]:
-        return self._tokens
-
-    @tokens.setter
-    def tokens(self, tokens):
-        self._tokens = tokens
-
-    @property
-    def host(self) -> str:
-        return self._host
-
-    @host.setter
-    def host(self, host):
-        self._host = host
-
-    @property
-    def pid(self) -> int:
-        return self._pid
-
-    @pid.setter
-    def pid(self, pid):
-        self._pid = pid
-
-    @property
-    def ip(self) -> str:
-        return self._ip
-
-    @ip.setter
-    def ip(self, ip):
-        self._ip = ip
-
-    @property
-    def description(self) -> str:
-        return self._description
-
-    @description.setter
-    def description(self, description):
-        self._description = description
-
-    @property
-    def operator(self) -> Operator:
-        return self._operator
-
-    @operator.setter
-    def operator(self, operator):
-        if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
-        else:
-            self._operator = Operator(username=operator)
-
-    @property
-    def active(self) -> bool:
-        return self._active
-
-    @active.setter
-    def active(self, active):
-        self._active = active
-
-    @property
-    def pcallback(self) -> "Callback":
-        return self._pcallback
-
-    @pcallback.setter
-    def pcallback(self, pcallback):
-        if isinstance(pcallback, Callback) or pcallback is None:
-            self._pcallback = pcallback
-        elif pcallback == "null":
-            self._pcallback = None
-        else:
-            self._pcallback = Callback(id=pcallback)
-
-    @property
-    def registered_payload(self) -> "Payload":
-        return self._registered_payload
-
-    @registered_payload.setter
-    def registered_payload(self, registered_payload):
-        if isinstance(registered_payload, Payload) or registered_payload is None:
-            self._registered_payload = registered_payload
-        else:
-            self._registered_payload = Payload(uuid=registered_payload)
-
-    @property
-    def payload_type(self) -> PayloadType:
-        return self._payload_type
-
-    @payload_type.setter
-    def payload_type(self, payload_type):
-        if isinstance(payload_type, PayloadType) or payload_type is None:
-            self._payload_type = payload_type
-        else:
-            self._payload_type = PayloadType(ptype=payload_type)
-
-    @property
-    def c2_profile(self) -> C2Profile:
-        return self._c2_profile
-
-    @c2_profile.setter
-    def c2_profile(self, c2_profile):
-        if isinstance(c2_profile, C2Profile) or c2_profile is None:
-            self._c2_profile = c2_profile
-        else:
-            self._c2_profile = C2Profile(name=c2_profile)
-
-    @property
-    def payload_description(self) -> str:
-        return self._payload_description
-
-    @payload_description.setter
-    def payload_description(self, payload_description):
-        self._payload_description = payload_description
-
-    @property
-    def integrity_level(self) -> int:
-        return self._integrity_level
-
-    @integrity_level.setter
-    def integrity_level(self, integrity_level):
-        self._integrity_level = integrity_level
-
-    @property
-    def operation(self) -> Operation:
-        return self._operation
-
-    @operation.setter
-    def operation(self, operation):
-        if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
-        else:
-            self._operation = Operation(name=operation)
-
-    @property
-    def crypto_type(self) -> str:
-        return self._crypto_type
-
-    @crypto_type.setter
-    def crypto_type(self, crypto_type):
-        self._crypto_type = crypto_type
-
-    @property
-    def dec_key(self) -> str:
-        return self._dec_key
-
-    @dec_key.setter
-    def dec_key(self, dec_key):
-        self._dec_key = dec_key
-
-    @property
-    def enc_key(self) -> str:
-        return self._enc_key
-
-    @enc_key.setter
-    def enc_key(self, enc_key):
-        self._enc_key = enc_key
-
-    @property
-    def tasks(self) -> List["Task"]:
-        return self._tasks
-
-    @tasks.setter
-    def tasks(self, tasks):
-        if isinstance(tasks, List):
-            self._tasks = [Task(**x) if isinstance(x, Dict) else x for x in tasks]
-        elif tasks is None:
-            self._tasks = tasks
-        else:
-            self._tasks = [Task(**tasks) if isinstance(tasks, Dict) else tasks]
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def supported_profiles(self) -> List[C2Profile]:
-        return self._supported_profiles
-
-    @supported_profiles.setter
-    def supported_profiles(self, supported_profiles):
-        if supported_profiles is None:
-            self._supported_profiles = supported_profiles
-        else:
-            self._supported_profiles = [x if isinstance(x, C2Profile) else C2Profile(**x) for x in supported_profiles]
-
 
 class TaskFile:
     def __init__(self, content: Union[bytes, str], filename: str, param_name: str):
-        self._filename = filename
+        self.filename = filename
         if isinstance(content, bytes):
-            self._content = content
+            self.content = content
         else:
-            self._content = base64.b64decode(content)
-        self._param_name = param_name
+            self.content = base64.b64decode(content)
+        self.param_name = param_name
 
     @property
     def filename(self):
@@ -2040,9 +817,9 @@ class Task:
         **kwargs
     ):
         if isinstance(command, Command) or command is None:
-            self._command = command
+            self.command = command
         else:
-            self._command = Command(cmd=command)
+            self.command = Command(cmd=command)
         self.params = params
         self.timestamp = timestamp
         self.agent_task_id = agent_task_id
@@ -2058,67 +835,68 @@ class Task:
         self.subtask_group_name = subtask_group_name
         self.operation = operation
         self.completed = completed
-        self._display_params = display_params
+        self.display_params = display_params
         self.payload_type = payload_type
         if isinstance(callback, Callback) or callback is None:
-            self._callback = callback
+            self.callback = callback
         elif isinstance(callback, Dict):
-            self._callback = Callback(**callback)
+            self.callback = Callback(**callback)
         else:
-            self._callback = Callback(id=callback)
+            self.callback = Callback(id=callback)
         if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
+            self.operator = operator
         else:
-            self._operator = Operator(username=operator)
+            self.operator = Operator(username=operator)
         self.status = status
-        self._original_params = original_params
+        self.original_params = original_params
         if comment == "":
-            self._comment = None
+            self.comment = None
         else:
-            self._comment = comment
+            self.comment = comment
         if isinstance(comment_operator, Operator) or comment_operator is None:
-            self._comment_operator = comment_operator
+            self.comment_operator = comment_operator
         elif comment_operator == "null":
-            self._comment_operator = None
+            self.comment_operator = None
         else:
-            self._comment_operator = Operator(username=comment_operator)
-        self._id = id
+            self.comment_operator = Operator(username=comment_operator)
+        self.id = id
         if isinstance(responses, List):
-            self._responses = [
+            self.responses = [
                 Response(**x) if isinstance(x, Dict) else x for x in responses
             ]
         elif responses is None:
-            self._responses = responses
+            self.responses = responses
         else:
-            self._responses = [
+            self.responses = [
                 Response(**responses)
                 if isinstance(responses, Dict)
                 else Response(response=responses)
             ]
-        if self._status is None:
-            self._status = task_status
-        self._display_params = display_params
-        self._stdout = stdout
-        self._stderr = stderr
-        self._token = token
-        self._opsec_pre_blocked = opsec_pre_blocked
-        self._opsec_pre_bypassed = opsec_pre_bypassed
-        self._opsec_pre_message = opsec_pre_message
-        self._opsec_pre_bypass_role = opsec_pre_bypass_role
-        self._opsec_pre_bypass_user = opsec_pre_bypass_user
-        self._opsec_post_bypassed = opsec_post_bypassed
-        self._opsec_post_blocked = opsec_post_blocked
-        self._opsec_post_message = opsec_post_message
-        self._opsec_post_bypass_role = opsec_post_bypass_role
-        self._opsec_post_bypass_user = opsec_post_bypass_user
+        if self.status is None:
+            self.status = task_status
+        self.display_params = display_params
+        self.stdout = stdout
+        self.stderr = stderr
+        self.token = token
+        self.opsec_pre_blocked = opsec_pre_blocked
+        self.opsec_pre_bypassed = opsec_pre_bypassed
+        self.opsec_pre_message = opsec_pre_message
+        self.opsec_pre_bypass_role = opsec_pre_bypass_role
+        self.opsec_pre_bypass_user = opsec_pre_bypass_user
+        self.opsec_post_bypassed = opsec_post_bypassed
+        self.opsec_post_blocked = opsec_post_blocked
+        self.opsec_post_message = opsec_post_message
+        self.opsec_post_bypass_role = opsec_post_bypass_role
+        self.opsec_post_bypass_user = opsec_post_bypass_user
         if isinstance(files, List):
-            self._files = files
+            self.files = files
         elif isinstance(files, TaskFile):
-            self._files = [files]
+            self.files = [files]
         elif files is None:
-            self._files = None
+            self.files = None
         else:
             raise Exception("Invalid value for files parameter")
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -2142,331 +920,6 @@ class Task:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, Task):
-            return self._id == other.id
-        return False
-
-    @property
-    def command(self) -> Command:
-        return self._command
-
-    @command.setter
-    def command(self, command):
-        if isinstance(command, Command) or command is None:
-            self._command = command
-        else:
-            self._command = Command(cmd=command)
-
-    @property
-    def params(self) -> str:
-        return self._params
-
-    @params.setter
-    def params(self, params):
-        if params is None:
-            self._params = ""
-        else:
-            self._params = params
-    @property
-    def payload_type(self) -> str:
-        return self._payload_type
-
-    @payload_type.setter
-    def payload_type(self, payload_type):
-        self._payload_type = payload_type
-
-    @property
-    def files(self) -> List[TaskFile]:
-        return self._files
-
-    @files.setter
-    def files(self, files):
-        if isinstance(files, List):
-            self._files = files
-        elif isinstance(files, TaskFile):
-            self._files = [files]
-        elif files is None:
-            self._files = None
-        else:
-            raise Exception("Invalid value for files parameter")
-
-    @property
-    def timestamp(self) -> str:
-        return self._timestamp
-
-    @timestamp.setter
-    def timestamp(self, timestamp):
-        self._timestamp = timestamp
-
-    @property
-    def callback(self) -> Callback:
-        return self._callback
-
-    @callback.setter
-    def callback(self, callback):
-        if isinstance(callback, Callback):
-            self._callback = callback
-        else:
-            self._callback = Callback(id=callback)
-
-    @property
-    def operator(self) -> Operator:
-        return self._operator
-
-    @operator.setter
-    def operator(self, operator):
-        if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
-        else:
-            self._operator = Operator(username=operator)
-
-    @property
-    def status(self) -> str:
-        return self._status
-
-    @status.setter
-    def status(self, status):
-        self._status = status
-
-    @property
-    def original_params(self) -> str:
-        return self._original_params
-
-    @original_params.setter
-    def original_params(self, original_params):
-        self._original_params = original_params
-
-    @property
-    def comment(self) -> str:
-        return self._comment
-
-    @comment.setter
-    def comment(self, comment):
-        if comment == "":
-            self._comment = None
-        else:
-            self._comment = comment
-
-    @property
-    def comment_operator(self) -> Operator:
-        return self._comment_operator
-
-    @comment_operator.setter
-    def comment_operator(self, comment_operator):
-        if isinstance(comment_operator, Operator) or comment_operator is None:
-            self._comment_operator = comment_operator
-        elif comment_operator == "null":
-            self._comment_operator = None
-        else:
-            self._comment_operator = Operator(username=comment_operator)
-
-    @property
-    def responses(self) -> List["Response"]:
-        return self._responses
-
-    @responses.setter
-    def responses(self, responses):
-        if isinstance(responses, List):
-            self._responses = [
-                Response(**x) if isinstance(x, Dict) else x for x in responses
-            ]
-        elif responses is None:
-            self._responses = responses
-        else:
-            self._responses = [
-                Response(**responses)
-                if isinstance(responses, Dict)
-                else Response(response=responses)
-            ]
-
-    @property
-    def id(self):
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def task_status(self) -> str:
-        return self._status
-
-    @task_status.setter
-    def task_status(self, task_status):
-        self._status = task_status
-
-    @property
-    def completed(self) -> bool:
-        return self._completed
-
-    @completed.setter
-    def completed(self, completed):
-        self._completed = completed
-        
-    @property
-    def agent_task_id(self) -> str:
-        return self._agent_task_id
-
-    @agent_task_id.setter
-    def agent_task_id(self, agent_task_id):
-        self._agent_task_id = agent_task_id
-        
-    @property
-    def command_id(self) -> int:
-        return self._command_id
-
-    @command_id.setter
-    def command_id(self, command_id):
-        self._command_id = command_id
-        
-    @property
-    def status_timestamp_preprocessing(self) -> str:
-        return self._status_timestamp_preprocessing
-
-    @status_timestamp_preprocessing.setter
-    def status_timestamp_preprocessing(self, status_timestamp_preprocessing):
-        self._status_timestamp_preprocessing = status_timestamp_preprocessing
-        
-    @property
-    def status_timestamp_submitted(self) -> str:
-        return self._status_timestamp_submitted
-
-    @status_timestamp_submitted.setter
-    def status_timestamp_submitted(self, status_timestamp_submitted):
-        self._status_timestamp_submitted = status_timestamp_submitted
-        
-    @property
-    def status_timestamp_processed(self) -> str:
-        return self._status_timestamp_processed
-
-    @status_timestamp_processed.setter
-    def status_timestamp_processed(self, status_timestamp_processed):
-        self._status_timestamp_processed = status_timestamp_processed
-        
-    @property
-    def status_timestamp_processing(self) -> str:
-        return self._status_timestamp_processing
-
-    @status_timestamp_processing.setter
-    def status_timestamp_processing(self, status_timestamp_processing):
-        self._status_timestamp_processing = status_timestamp_processing
-        
-    @property
-    def operation(self) -> str:
-        return self._operation
-
-    @operation.setter
-    def operation(self, operation):
-        self._operation = operation
-
-    @property
-    def display_params(self) -> str:
-        return self._display_params
-
-    @display_params.setter
-    def display_params(self, display_params):
-        self._display_params = display_params
-
-    @property
-    def token(self) -> dict:
-        return self._token
-
-    @token.setter
-    def token(self, token):
-        self._token = token
-
-    @property
-    def opsec_pre_blocked(self) -> bool:
-        return self._opsec_pre_blocked
-
-    @opsec_pre_blocked.setter
-    def opsec_pre_blocked(self, opsec_pre_blocked):
-        self._opsec_pre_blocked = opsec_pre_blocked
-
-    @property
-    def opsec_pre_bypassed(self) -> bool:
-        return self._opsec_pre_bypassed
-
-    @opsec_pre_bypassed.setter
-    def opsec_pre_bypassed(self, opsec_pre_bypassed):
-        self._opsec_pre_bypassed = opsec_pre_bypassed
-
-    @property
-    def opsec_pre_message(self) -> str:
-        return self._opsec_pre_message
-
-    @opsec_pre_message.setter
-    def opsec_pre_message(self, opsec_pre_message):
-        self._opsec_pre_message = opsec_pre_message
-
-    @property
-    def opsec_pre_bypass_role(self) -> str:
-        return self._opsec_pre_bypass_role
-
-    @opsec_pre_bypass_role.setter
-    def opsec_pre_bypass_role(self, opsec_pre_bypass_role):
-        self._opsec_pre_bypass_role = opsec_pre_bypass_role
-
-    @property
-    def opsec_pre_bypass_user(self) -> Operator:
-        return self._opsec_pre_bypass_user
-
-    @opsec_pre_bypass_user.setter
-    def opsec_pre_bypass_user(self, opsec_pre_bypass_user):
-        if isinstance(opsec_pre_bypass_user, Operator) or opsec_pre_bypass_user is None:
-            self._opsec_pre_bypass_user = opsec_pre_bypass_user
-        elif opsec_pre_bypass_user == "":
-            self._opsec_pre_bypass_user = None
-        else:
-            self._opsec_pre_bypass_user = Operator(username=opsec_pre_bypass_user)
-
-    @property
-    def opsec_post_blocked(self) -> bool:
-        return self._opsec_post_blocked
-
-    @opsec_post_blocked.setter
-    def opsec_post_blocked(self, opsec_post_blocked):
-        self._opsec_post_blocked = opsec_post_blocked
-
-    @property
-    def opsec_post_bypassed(self) -> bool:
-        return self._opsec_post_bypassed
-
-    @opsec_post_bypassed.setter
-    def opsec_post_bypassed(self, opsec_post_bypassed):
-        self._opsec_post_bypassed = opsec_post_bypassed
-
-    @property
-    def opsec_post_message(self) -> str:
-        return self._opsec_post_message
-
-    @opsec_post_message.setter
-    def opsec_post_message(self, opsec_post_message):
-        self._opsec_post_message = opsec_post_message
-
-    @property
-    def opsec_post_bypass_role(self) -> str:
-        return self._opsec_post_bypass_role
-
-    @opsec_post_bypass_role.setter
-    def opsec_post_bypass_role(self, opsec_post_bypass_role):
-        self._opsec_post_bypass_role = opsec_post_bypass_role
-
-    @property
-    def opsec_post_bypass_user(self) -> Operator:
-        return self._opsec_post_bypass_user
-
-    @opsec_post_bypass_user.setter
-    def opsec_post_bypass_user(self, opsec_post_bypass_user):
-        if isinstance(opsec_post_bypass_user, Operator) or opsec_post_bypass_user is None:
-            self._opsec_post_bypass_user = opsec_post_bypass_user
-        elif opsec_post_bypass_user == "":
-            self._opsec_post_bypass_user = None
-        else:
-            self._opsec_post_bypass_user = Operator(username=opsec_post_bypass_user)
 
 
 class Payload:
@@ -2501,60 +954,60 @@ class Payload:
         selected_os: str = None,
         **kwargs,
     ):
-        self._uuid = uuid
-        self._tag = tag
-        self._build_container = build_container
-        self._callback_alert = callback_alert
-        self._auto_generated = auto_generated
-        self._build_parameters = build_parameters
-        self._build_stderr = build_stderr
-        self._build_stdout = build_stdout
-        self._os = os
+        self.uuid = uuid
+        self.tag = tag
+        self.build_container = build_container
+        self.callback_alert = callback_alert
+        self.auto_generated = auto_generated
+        self.build_parameters = build_parameters
+        self.build_stderr = build_stderr
+        self.build_stdout = build_stdout
+        self.os = os
         self.selected_os = selected_os
         if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
+            self.operator = operator
         else:
-            self._operator = Operator(username=operator)
-        self._creation_time = creation_time
+            self.operator = Operator(username=operator)
+        self.creation_time = creation_time
         if isinstance(payload_type, PayloadType) or payload_type is None:
-            self._payload_type = payload_type
+            self.payload_type = payload_type
         else:
-            self._payload_type = PayloadType(ptype=payload_type)
+            self.payload_type = PayloadType(ptype=payload_type)
         if isinstance(pcallback, Callback) or pcallback is None:
-            self._pcallback = pcallback
+            self.pcallback = pcallback
         else:
-            self._pcallback = Callback(id=pcallback)
+            self.pcallback = Callback(id=pcallback)
         if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
+            self.operation = operation
         else:
-            self._operation = Operation(name=operation)
+            self.operation = Operation(name=operation)
         if isinstance(task, Task) or task is None:
-            self._task = task
+            self.task = task
         else:
-            self._task = Task(**task)
+            self.task = Task(**task)
         if isinstance(file_id, FileMeta) or file_id is None:
-            self._file_id = file_id
+            self.file_id = file_id
         else:
-            self._file_id = FileMeta(**file_id)
+            self.file_id = FileMeta(**file_id)
         if isinstance(wrapped_payload, Payload) or wrapped_payload is None:
-            self._wrapped_payload = wrapped_payload
+            self.wrapped_payload = wrapped_payload
         else:
-            self._wrapped_payload = Payload(uuid=wrapped_payload)
-        self._deleted = deleted
-        self._build_phase = build_phase
-        self._build_message = build_message
-        self._id = id
+            self.wrapped_payload = Payload(uuid=wrapped_payload)
+        self.deleted = deleted
+        self.build_phase = build_phase
+        self.build_message = build_message
+        self.id = id
         if isinstance(commands, List) and len(commands) > 0:
             if isinstance(commands[0], Command):
-                self._commands = commands
+                self.commands = commands
             elif isinstance(commands[0], Dict):
-                self._commands = [Command(**x) for x in commands]
+                self.commands = [Command(**x) for x in commands]
             else:
-                self._commands = [Command(cmd=x) for x in commands]
+                self.commands = [Command(cmd=x) for x in commands]
         else:
-            self._commands = None
+            self.commands = None
         if isinstance(c2_profiles, Dict):
-            self._c2_profiles = {}
+            self.c2_profiles = {}
             for k, v in c2_profiles.items():
                 key = (
                     k["name"]
@@ -2563,17 +1016,17 @@ class Payload:
                     if isinstance(k, C2Profile)
                     else k
                 )
-                self._c2_profiles[key] = []
+                self.c2_profiles[key] = []
                 for i in v:
                     # now iterate over each list of parameters for the profile
                     if isinstance(i, C2ProfileParameters):
-                        self._c2_profiles[key].append(i)
+                        self.c2_profiles[key].append(i)
                     elif isinstance(i, Dict):
-                        self._c2_profiles[key].append(C2ProfileParameters(**i))
+                        self.c2_profiles[key].append(C2ProfileParameters(**i))
         else:
-            self._c2_profiles = None
-        self._filename = filename
-        self.__dict__.update(kwargs)
+            self.c2_profiles = None
+        self.filename = filename
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -2597,205 +1050,6 @@ class Payload:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, Payload):
-            return self._uuid == other.uuid
-        return False
-
-    @property
-    def uuid(self) -> str:
-        return self._uuid
-
-    @uuid.setter
-    def uuid(self, uuid):
-        self._uuid = uuid
-
-    @property
-    def os(self) -> str:
-        return self._os
-
-    @os.setter
-    def os(self, os):
-        self._os = os
-
-    @property
-    def tag(self) -> str:
-        return self._tag
-
-    @tag.setter
-    def tag(self, tag):
-        self._tag = tag
-
-    @property
-    def operator(self) -> Operator:
-        return self._operator
-
-    @operator.setter
-    def operator(self, operator):
-        if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
-        else:
-            self._operator = Operator(username=operator)
-
-    @property
-    def creation_time(self) -> str:
-        return self._creation_time
-
-    @creation_time.setter
-    def creation_time(self, creation_time):
-        self._creation_time = creation_time
-
-    @property
-    def payload_type(self) -> PayloadType:
-        return self._payload_type
-
-    @payload_type.setter
-    def payload_type(self, payload_type):
-        if isinstance(payload_type, PayloadType) or payload_type is None:
-            self._payload_type = payload_type
-        else:
-            self._payload_type = PayloadType(ptype=payload_type)
-
-    @property
-    def pcallback(self) -> "Callback":
-        return self._pcallback
-
-    @pcallback.setter
-    def pcallback(self, pcallback):
-        if isinstance(pcallback, Callback) or pcallback is None:
-            self._pcallback = pcallback
-        else:
-            self._pcallback = Callback(id=pcallback)
-
-    @property
-    def c2_profiles(self) -> Dict:
-        return self._c2_profiles
-
-    @c2_profiles.setter
-    def c2_profiles(self, c2_profiles):
-        if isinstance(c2_profiles, Dict):
-            self._c2_profiles = {}
-            for k, v in c2_profiles.items():
-                key = (
-                    k["name"]
-                    if isinstance(k, Dict)
-                    else k.name
-                    if isinstance(k, C2Profile)
-                    else k
-                )
-                self._c2_profiles[key] = []
-                for i in v:
-                    # now iterate over each list of parameters for the profile
-                    if isinstance(i, C2ProfileParameters):
-                        self._c2_profiles[key].append(i)
-                    elif isinstance(i, Dict):
-                        self._c2_profiles[key].append(C2ProfileParameters(**i))
-        else:
-            self._c2_profiles = None
-
-    @property
-    def operation(self) -> Operation:
-        return self._operation
-
-    @operation.setter
-    def operation(self, operation):
-        if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
-        else:
-            self._operation = Operation(name=operation)
-
-    @property
-    def wrapped_payload(self) -> "Payload":
-        return self._wrapped_payload
-
-    @wrapped_payload.setter
-    def wrapped_payload(self, wrapped_payload):
-        if isinstance(wrapped_payload, Payload) or wrapped_payload is None:
-            self._wrapped_payload = wrapped_payload
-        else:
-            self._wrapped_payload = Payload(uuid=payload)
-
-    @property
-    def deleted(self) -> bool:
-        return self._deleted
-
-    @deleted.setter
-    def deleted(self, deleted):
-        self._deleted = deleted
-
-    @property
-    def build_phase(self) -> str:
-        return self._build_phase
-
-    @build_phase.setter
-    def build_phase(self, build_phase):
-        self._build_phase = build_phase
-
-    @property
-    def build_message(self) -> str:
-        return self._build_message
-
-    @build_message.setter
-    def build_message(self, build_message):
-        self._build_message = build_message
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def build_container(self) -> str:
-        return self._build_container
-
-    @build_container.setter
-    def build_container(self, build_container):
-        self._build_container = build_container
-
-    @property
-    def commands(self) -> List[Command]:
-        return self._commands
-
-    @commands.setter
-    def commands(self, commands):
-        if isinstance(commands, List):
-            self._commands = [
-                Command(**x) if isinstance(x, Dict) else x for x in commands
-            ]
-        else:
-            self._commands = None
-
-    @property
-    def build_parameters(self) -> List[Dict]:
-        return self._build_parameters
-
-    @build_parameters.setter
-    def build_parameters(self, build_parameters):
-        self._build_parameters = build_parameters
-
-    @property
-    def file_id(self) -> "FileMeta":
-        return self._file_id
-
-    @file_id.setter
-    def file_id(self, file_id):
-        if isinstance(file_id, "FileMeta") or file_id is None:
-            self._file_id = file_id
-        else:
-            self._file_id = FileMeta(**file_id)
-
-    @property
-    def filename(self) -> str:
-        return self._filename
-
-    @filename.setter
-    def filename(self, filename):
-        self._filename = filename
 
 
 class FileMeta:
@@ -2829,41 +1083,42 @@ class FileMeta:
         params: dict = None,
         **kwargs,
     ):
-        self._agent_file_id = agent_file_id
-        self._total_chunks = total_chunks
-        self._chunks_received = chunks_received
-        self._chunk_size = chunk_size
+        self.agent_file_id = agent_file_id
+        self.total_chunks = total_chunks
+        self.chunks_received = chunks_received
+        self.chunk_size = chunk_size
         if isinstance(task, Task) or task is None:
-            self._task = task
+            self.task = task
         else:
-            self._task = Task(id=task)
-        self._complete = complete
-        self._path = path
-        self._full_remote_path = full_remote_path
-        self._host = host
-        self._is_payload = is_payload
-        self._is_screenshot = is_screenshot
-        self._is_download_from_agent = is_download_from_agent
-        self._file_browser = file_browser
-        self._filename = filename
-        self._delete_after_fetch = delete_after_fetch
+            self.task = Task(id=task)
+        self.complete = complete
+        self.path = path
+        self.full_remote_path = full_remote_path
+        self.host = host
+        self.is_payload = is_payload
+        self.is_screenshot = is_screenshot
+        self.is_download_from_agent = is_download_from_agent
+        self.file_browser = file_browser
+        self.filename = filename
+        self.delete_after_fetch = delete_after_fetch
         if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
+            self.operation = operation
         else:
-            self._operation = Operation(name=operation)
-        self._timestamp = timestamp
-        self._deleted = deleted
+            self.operation = Operation(name=operation)
+        self.timestamp = timestamp
+        self.deleted = deleted
         if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
+            self.operator = operator
         else:
-            self._operator = Operator(username=operator)
-        self._md5 = md5
-        self._sha1 = sha1
-        self._id = id
-        self._cmd = cmd
-        self._comment = comment
-        self._upload = upload
-        self._params = params
+            self.operator = Operator(username=operator)
+        self.md5 = md5
+        self.sha1 = sha1
+        self.id = id
+        self.cmd = cmd
+        self.comment = comment
+        self.upload = upload
+        self.params = params
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -2887,229 +1142,6 @@ class FileMeta:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, FileMeta):
-            return self._id == other.id
-        return False
-
-    @property
-    def agent_file_id(self):
-        return self._agent_file_id
-
-    @agent_file_id.setter
-    def total_chunks(self, agent_file_id):
-        self._agent_file_id = agent_file_id
-
-    @property
-    def total_chunks(self):
-        return self._total_chunks
-
-    @total_chunks.setter
-    def total_chunks(self, total_chunks):
-        self._total_chunks = total_chunks
-
-    @property
-    def chunks_received(self):
-        return self._chunks_received
-
-    @chunks_received.setter
-    def chunks_received(self, chunks_received):
-        self._chunks_received = chunks_received
-
-    @property
-    def chunk_size(self):
-        return self._chunk_size
-
-    @chunk_size.setter
-    def chunk_size(self, chunk_size):
-        self._chunk_size = chunk_size
-
-    @property
-    def task(self):
-        return self._task
-
-    @task.setter
-    def task(self, task):
-        if isinstance(task, Task) or task is None:
-            self._task = task
-        else:
-            self._task = Task(id=task)
-
-    @property
-    def complete(self):
-        return self._complete
-
-    @complete.setter
-    def complete(self, complete):
-        self._complete = complete
-
-    @property
-    def path(self):
-        return self._path
-
-    @path.setter
-    def path(self, path):
-        self._path = path
-
-    @property
-    def full_remote_path(self):
-        return self._full_remote_path
-
-    @full_remote_path.setter
-    def full_remote_path(self, full_remote_path):
-        self._full_remote_path = full_remote_path
-
-    @property
-    def host(self):
-        return self._host
-
-    @host.setter
-    def host(self, host):
-        self._host = host
-
-    @property
-    def is_payload(self):
-        return self._is_payload
-
-    @is_payload.setter
-    def is_payload(self, is_payload):
-        self._is_payload = is_payload
-
-    @property
-    def is_screenshot(self):
-        return self._is_screenshot
-
-    @is_screenshot.setter
-    def is_screenshot(self, is_screenshot):
-        self._is_screenshot = is_screenshot
-
-    @property
-    def is_download_from_agent(self):
-        return self._is_download_from_agent
-
-    @is_download_from_agent.setter
-    def is_download_from_agent(self, is_download_from_agent):
-        self._is_download_from_agent = is_download_from_agent
-
-    @property
-    def file_browser(self):
-        return self._file_browser
-
-    @file_browser.setter
-    def file_browser(self, file_browser):
-        self._file_browser = file_browser
-
-    @property
-    def filename(self):
-        return self._filename
-
-    @filename.setter
-    def filename(self, filename):
-        self._filename = filename
-
-    @property
-    def delete_after_fetch(self):
-        return self._delete_after_fetch
-
-    @delete_after_fetch.setter
-    def delete_after_fetch(self, delete_after_fetch):
-        self._delete_after_fetch = delete_after_fetch
-
-    @property
-    def operation(self):
-        return self._operation
-
-    @operation.setter
-    def operation(self, operation):
-        if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
-        else:
-            self._operation = Operation(name=operation)
-
-    @property
-    def timestamp(self):
-        return self._timestamp
-
-    @timestamp.setter
-    def timestamp(self, timestamp):
-        self._timestamp = timestamp
-
-    @property
-    def deleted(self):
-        return self._deleted
-
-    @deleted.setter
-    def deleted(self, deleted):
-        self._deleted = deleted
-
-    @property
-    def operator(self):
-        return self._operator
-
-    @operator.setter
-    def operator(self, operator):
-        if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
-        else:
-            self._operator = Operator(username=operator)
-
-    @property
-    def md5(self):
-        return self._md5
-
-    @md5.setter
-    def md5(self, md5):
-        self._md5 = md5
-
-    @property
-    def sha1(self):
-        return self._sha1
-
-    @sha1.setter
-    def sha1(self, sha1):
-        self._sha1 = sha1
-
-    @property
-    def id(self):
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def cmd(self):
-        return self._cmd
-
-    @cmd.setter
-    def cmd(self, cmd):
-        self._cmd = cmd
-
-    @property
-    def comment(self):
-        return self._comment
-
-    @comment.setter
-    def comment(self, comment):
-        self._comment = comment
-
-    @property
-    def upload(self):
-        return self._upload
-
-    @upload.setter
-    def upload(self, upload):
-        self._upload = upload
-
-    @property
-    def params(self):
-        return self._params
-
-    @params.setter
-    def params(self, params):
-        self._params = params
 
 
 class Response:
@@ -3121,15 +1153,16 @@ class Response:
         id: int = None,
         **kwargs,
     ):
-        self._response = response
-        self._timestamp = timestamp
+        self.response = response
+        self.timestamp = timestamp
         if isinstance(task, Task) or task is None:
-            self._task = task
+            self.task = task
         elif isinstance(task, Dict):
-            self._task = Task(**task)
+            self.task = Task(**task)
         else:
-            self._task = Task(id=task)
-        self._id = id
+            self.task = Task(id=task)
+        self.id = id
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -3153,49 +1186,6 @@ class Response:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, Response):
-            return self._id == other.id
-        return False
-
-    @property
-    def response(self) -> str:
-        return self._response
-
-    @response.setter
-    def response(self, response):
-        self._response = response
-
-    @property
-    def timestamp(self) -> str:
-        return self._timestamp
-
-    @timestamp.setter
-    def timestamp(self, timestamp):
-        self._timestamp = timestamp
-
-    @property
-    def task(self) -> Task:
-        return self._task
-
-    @task.setter
-    def task(self, task):
-        if isinstance(task, Task) or task is None:
-            self._task = task
-        elif isinstance(task, Dict):
-            self._task = Task(**task)
-        else:
-            self._task = Task(id=task)
-
-    @property
-    def id(self):
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
 
 
 class Credential:
@@ -3216,31 +1206,32 @@ class Credential:
         new: bool = None,
         **kwargs,
     ):
-        self._type = type
+        self.type = type
         if isinstance(task, Task) or task is None:
-            self._task = task
+            self.task = task
         else:
-            self._task = Task(id=task)
+            self.task = Task(id=task)
         if isinstance(task_command, Command) or task_command is None:
-            self._task_command = task_command
+            self.task_command = task_command
         else:
-            self._task_command = Command(cmd=task_command)
-        self._account = account
-        self._realm = realm
-        self._id = id
+            self.task_command = Command(cmd=task_command)
+        self.account = account
+        self.realm = realm
+        self.id = id
         if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
+            self.operator = operator
         else:
-            self._operator = Operator(username=operator)
+            self.operator = Operator(username=operator)
         if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
+            self.operation = operation
         else:
-            self._operation = Operation(name=operation)
-        self._timestamp = timestamp
-        self._credential = credential
-        self._comment = comment
-        self._deleted = deleted
-        self._new = new
+            self.operation = Operation(name=operation)
+        self.timestamp = timestamp
+        self.credential = credential
+        self.comment = comment
+        self.deleted = deleted
+        self.new = new
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -3264,128 +1255,6 @@ class Credential:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, Credential):
-            return self._id == other.id
-        return False
-
-    @property
-    def type(self) -> str:
-        return self._type
-
-    @type.setter
-    def type(self, type):
-        self._type = type
-
-    @property
-    def task(self) -> Task:
-        return self._task
-
-    @task.setter
-    def task(self, task):
-        if isinstance(task, Task) or task is None:
-            self._task = task
-        else:
-            self._task = Task(id=task)
-
-    @property
-    def task_command(self) -> Command:
-        return self._task_command
-
-    @task_command.setter
-    def task_command(self, task_command):
-        if isinstance(task_command, Command) or task_command is None:
-            self._task_command = task_command
-        else:
-            self._task_command = Command(cmd=task_command)
-
-    @property
-    def account(self) -> str:
-        return self._account
-
-    @account.setter
-    def account(self, account):
-        self._account = account
-
-    @property
-    def realm(self) -> str:
-        return self._realm
-
-    @realm.setter
-    def realm(self, realm):
-        self._realm = realm
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def operator(self) -> Operator:
-        return self._operator
-
-    @operator.setter
-    def operator(self, operator):
-        if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
-        else:
-            self._operator = Operator(username=operator)
-
-    @property
-    def operation(self) -> Operation:
-        return self._operation
-
-    @operation.setter
-    def operation(self, operation):
-        if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
-        else:
-            self._operation = Operation(name=operation)
-
-    @property
-    def timestamp(self) -> str:
-        return self._timestamp
-
-    @timestamp.setter
-    def timestamp(self, timestamp):
-        self._timestamp = timestamp
-
-    @property
-    def credential(self) -> bytes:
-        return self._credential
-
-    @credential.setter
-    def credential(self, credential):
-        self._credential = credential
-
-    @property
-    def comment(self) -> str:
-        return self._comment
-
-    @comment.setter
-    def comment(self, comment):
-        self._comment = comment
-
-    @property
-    def deleted(self) -> bool:
-        return self._deleted
-
-    @deleted.setter
-    def deleted(self, deleted):
-        self._deleted = deleted
-
-    @property
-    def new(self) -> bool:
-        return self._new
-
-    @new.setter
-    def new(self, new):
-        self._new = new
 
 
 class Keylog:
@@ -3402,23 +1271,24 @@ class Keylog:
         callback: Union[Callback, Dict] = None,
         **kwargs,
     ):
-        self._keystrokes = keystrokes
-        self._window = window
-        self._timestamp = timestamp
-        self._user = user
-        self._host = host
+        self.keystrokes = keystrokes
+        self.window = window
+        self.timestamp = timestamp
+        self.user = user
+        self.host = host
         if isinstance(task, Task) or task is None:
-            self._task = task
+            self.task = task
         else:
-            self._task = Task(id=int)
+            self.task = Task(id=int)
         if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
+            self.operation = operation
         else:
-            self._operation = Operation(name=operation)
+            self.operation = Operation(name=operation)
         if isinstance(callback, Callback) or callback is None:
-            self._callback = callback
+            self.callback = callback
         else:
-            self._callback = Callback(**callback)
+            self.callback = Callback(**callback)
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -3442,92 +1312,6 @@ class Keylog:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, Keylog):
-            return self._id == other.id
-
-    @property
-    def keystrokes(self) -> bytes:
-        return self._keystrokes
-
-    @keystrokes.setter
-    def keystrokes(self, keystrokes):
-        self._keystrokes = keystrokes
-
-    @property
-    def window(self) -> str:
-        return self._window
-
-    @window.setter
-    def window(self, window):
-        self._window = window
-
-    @property
-    def timestamp(self) -> str:
-        return self._timestamp
-
-    @timestamp.setter
-    def timestamp(self, timestamp):
-        self._timestamp = timestamp
-
-    @property
-    def user(self) -> str:
-        return self._user
-
-    @user.setter
-    def user(self, user):
-        self._user = user
-
-    @property
-    def host(self) -> str:
-        return self._host
-
-    @host.setter
-    def host(self, host):
-        self._host = host
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def task(self) -> Task:
-        return self._task
-
-    @task.setter
-    def task(self, task):
-        if isinstance(task, Task) or task is None:
-            self._task = task
-        else:
-            self._task = Task(id=int)
-
-    @property
-    def operation(self) -> Operation:
-        return self._operation
-
-    @operation.setter
-    def operation(self, operation):
-        if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
-        else:
-            self._operation = Operation(name=operation)
-
-    @property
-    def callback(self) -> Callback:
-        return self._callback
-
-    @callback.setter
-    def callback(self, callback):
-        if isinstance(callback, Callback) or callback is None:
-            self._callback = callback
-        else:
-            self._callback = Callback(**callback)
 
 
 class DisabledCommandsProfile:
@@ -3535,10 +1319,11 @@ class DisabledCommandsProfile:
         self,
         payload_types: List[Union[PayloadType, str, Dict]] = None,
         name: str = None,
+        **kwargs,
     ):
-        self._name = name
+        self.name = name
         if isinstance(payload_types, List):
-            self._payload_types = [
+            self.payload_types = [
                 PayloadType(ptype=x)
                 if isinstance(x, str)
                 else PayloadType(**x)
@@ -3547,7 +1332,8 @@ class DisabledCommandsProfile:
                 for x in payload_types
             ]
         else:
-            self._payload_types = payload_types
+            self.payload_types = payload_types
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -3571,37 +1357,6 @@ class DisabledCommandsProfile:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, DisabledCommandsProfile):
-            return self._name == other.name
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self, name):
-        self._name = name
-
-    @property
-    def payload_types(self) -> List[PayloadType]:
-        return self._payload_types
-
-    @payload_types.setter
-    def payload_types(self, payload_types):
-        if isinstance(payload_types, List):
-            self._payload_types = [
-                PayloadType(ptype=x)
-                if isinstance(x, str)
-                else PayloadType(**x)
-                if isinstance(x, Dict)
-                else x
-                for x in payload_types
-            ]
-        else:
-            self._payload_types = payload_types
 
 
 class EventMessage:
@@ -3621,24 +1376,25 @@ class EventMessage:
         count: int = None,
         **kwargs,
     ):
-        self._timestamp = timestamp
-        self._message = message
-        self._level = level
-        self._deleted = deleted
-        self._resolved = resolved
-        self._id = id
-        self._channel = channel
-        self._alerts = alerts
-        self._source = source
-        self._count = count
+        self.timestamp = timestamp
+        self.message = message
+        self.level = level
+        self.deleted = deleted
+        self.resolved = resolved
+        self.id = id
+        self.channel = channel
+        self.alerts = alerts
+        self.source = source
+        self.count = count
         if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
+            self.operator = operator
         else:
-            self._operator = Operator(username=operator)
+            self.operator = Operator(username=operator)
         if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
+            self.operation = operation
         else:
-            self._operation = Operation(name=operation)
+            self.operation = Operation(name=operation)
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -3663,113 +1419,6 @@ class EventMessage:
     def __str__(self):
         return json.dumps(self.to_json())
 
-    def __eq__(self, other):
-        """Overrides the default implementation"""
-        if isinstance(other, EventMessage):
-            return self._id == other.id
-
-    @property
-    def operator(self) -> Operator:
-        return self._operator
-
-    @operator.setter
-    def operator(self, operator):
-        if isinstance(operator, Operator) or operator is None:
-            self._operator = operator
-        else:
-            self._operator = Operator(username=operator)
-
-    @property
-    def timestamp(self) -> str:
-        return self._timestamp
-
-    @timestamp.setter
-    def timestamp(self, timestamp):
-        self._timestamp = timestamp
-
-    @property
-    def message(self) -> str:
-        return self._message
-
-    @message.setter
-    def message(self, message):
-        self._message = message
-
-    @property
-    def operation(self) -> Operation:
-        return self._operation
-
-    @operation.setter
-    def operation(self, operation):
-        if isinstance(operation, Operation) or operation is None:
-            self._operation = operation
-        else:
-            self._operation = Operation(name=operation)
-
-    @property
-    def level(self) -> str:
-        return self._level
-
-    @level.setter
-    def level(self, level):
-        self._level = level
-
-    @property
-    def deleted(self) -> bool:
-        return self._deleted
-
-    @deleted.setter
-    def deleted(self, deleted):
-        self._deleted = deleted
-
-    @property
-    def resolved(self) -> bool:
-        return self._resolved
-
-    @resolved.setter
-    def resolved(self, resolved):
-        self._resolved = resolved
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
-
-    @property
-    def channel(self) -> str:
-        return self._channel
-
-    @channel.setter
-    def channel(self, channel):
-        self._channel = channel
-
-    @property
-    def alerts(self) -> List[Dict]:
-        return self._alerts
-
-    @alerts.setter
-    def alerts(self, alerts):
-        self._alerts = alerts
-
-    @property
-    def source(self) -> str:
-        return self._source
-
-    @source.setter
-    def source(self, source):
-        self._source = source
-
-    @property
-    def count(self) -> int:
-        return self._count
-
-    @count.setter
-    def count(self, count):
-        self._count = count
-
 
 class MythicResponse:
     def __init__(
@@ -3778,6 +1427,7 @@ class MythicResponse:
         raw_response: Dict[str, str] = None,
         response_code: int = None,
         status: str = None,
+        **kwargs
     ):
         # set the response_code and raw_response automatically
         self.response_code = response_code
@@ -3796,6 +1446,7 @@ class MythicResponse:
             self.response = raw_response
         elif response is None:
             self.response = raw_response
+        vars(self).update(kwargs)
 
     def to_json(self):
         r = {}
@@ -3808,38 +1459,6 @@ class MythicResponse:
 
     def __str__(self):
         return json.dumps(self.to_json())
-
-    @property
-    def response(self):
-        return self.__response
-
-    @property
-    def status(self):
-        return self.__status
-
-    @property
-    def response_code(self):
-        return self.__response_code
-
-    @property
-    def raw_response(self):
-        return self.__raw_response
-
-    @response.setter
-    def response(self, response):
-        self.__response = response
-
-    @response_code.setter
-    def response_code(self, response_code):
-        self.__response_code = response_code
-
-    @status.setter
-    def status(self, status):
-        self.__status = status
-
-    @raw_response.setter
-    def raw_response(self, raw_response):
-        self.__raw_response = raw_response
 
 
 class Mythic:
@@ -3857,23 +1476,23 @@ class Mythic:
         operator: Operator = None,
         global_timeout: int = None,
     ):
-        self._username = username
-        self._password = password
+        self.username = username
+        self.password = password
         if isinstance(apitoken, APIToken) or apitoken is None:
             self._apitoken = apitoken
         else:
             self._apitoken = APIToken(token_value=apitoken)
-        self._access_token = access_token
-        self._refresh_token = refresh_token
-        self._server_ip = server_ip
-        self._server_port = server_port
-        self._server_api_version = server_api_version
-        self._operator = operator
-        self._ssl = ssl
-        self._http = "http://" if not ssl else "https://"
-        self._ws = "ws://" if not ssl else "wss://"
-        self._global_timeout = global_timeout if global_timeout is not None else -1
-        self._scripting_version = 3
+        self.access_token = access_token
+        self.refresh_token = refresh_token
+        self.server_ip = server_ip
+        self.server_port = server_port
+        self.server_api_version = server_api_version
+        self.operator = operator
+        self.ssl = ssl
+        self.http = "http://" if not ssl else "https://"
+        self.ws = "ws://" if not ssl else "wss://"
+        self.global_timeout = global_timeout if global_timeout is not None else -1
+        self.scripting_version = 3
 
     def to_json(self):
         r = {}
@@ -3897,59 +1516,10 @@ class Mythic:
     def __str__(self):
         return json.dumps(self.to_json())
 
-    # ======== GETTING INTERNAL VALUES ==================
-    @property
-    def username(self):
-        return self._username
-
-    @property
-    def password(self):
-        return self._password
-
     @property
     def apitoken(self):
         return self._apitoken
-
-    @property
-    def access_token(self):
-        return self._access_token
-
-    @property
-    def refresh_token(self):
-        return self._refresh_token
-
-    @property
-    def server_ip(self):
-        return self._server_ip
-
-    @property
-    def server_port(self):
-        return self._server_port
-
-    @property
-    def operator(self):
-        return self._operator
-
-    @property
-    def server_api_version(self):
-        return self._server_api_version
-
-    @property
-    def ssl(self):
-        return self._ssl
-
-    @property
-    def global_timeout(self):
-        return self._global_timeout
-
-    # ========== SETTING INTERNAL VALUES ===============
-    @username.setter
-    def username(self, username=None):
-        self._username = username
-
-    @password.setter
-    def password(self, password=None):
-        self._password = password
+    
 
     @apitoken.setter
     def apitoken(self, apitoken=None):
@@ -3958,43 +1528,13 @@ class Mythic:
         else:
             self._apitoken = APIToken(token_value=apitoken)
 
-    @access_token.setter
-    def access_token(self, access_token=None):
-        self._access_token = access_token
-
-    @refresh_token.setter
-    def refresh_token(self, refresh_token=None):
-        self._refresh_token = refresh_token
-
-    @server_ip.setter
-    def server_ip(self, server_ip=None):
-        self._server_ip = server_ip
-
-    @server_port.setter
-    def server_port(self, server_port=None):
-        self._server_port = server_port
-
-    @operator.setter
-    def operator(self, operator=None):
-        self._operator = operator
-
-    @server_api_version.setter
-    def server_api_version(self, server_api_version=None):
-        self._server_api_version = server_api_version
-
-    @ssl.setter
-    def ssl(self, ssl=False):
-        self._ssl = ssl
-        self._http = "http://" if not ssl else "https://"
-        self._ws = "ws://" if not ssl else "wss://"
-
     # ======== BASIC GET/POST/PUT/DELETE JSON WEB REQUESTS =========
 
     def get_headers(self) -> dict:
-        if self._apitoken is not None:
-            return {"apitoken": self._apitoken.token_value}
-        elif self._access_token is not None:
-            return {"Authorization": "Bearer {}".format(self._access_token)}
+        if self.apitoken is not None:
+            return {"apitoken": self.apitoken.token_value}
+        elif self.access_token is not None:
+            return {"Authorization": "Bearer {}".format(self.access_token)}
         else:
             return {}
 
@@ -4209,10 +1749,10 @@ class Mythic:
         if self.operator is None:
             await self.get_self()
         url = "{}{}:{}/api/v{}/operations/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             self.operator.current_operation.id,
         )
         resp = await self.get_json(url)
@@ -4225,7 +1765,7 @@ class Mythic:
         Gets information about all operations your operator can see
         """
         url = "{}{}:{}/api/v{}/operations".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.get_json(url)
         if resp.response_code == 200 and resp.status == "success":
@@ -4249,10 +1789,10 @@ class Mythic:
             raise Exception("Failed to find operation: " + json.dumps(resp, indent=2, default=lambda o: o.to_json()))
         else:
             url = "{}{}:{}/api/v{}/operations/{}".format(
-                self._http,
+                self.http,
                 self.server_ip,
-                self._server_port,
-                self._server_api_version,
+                self.server_port,
+                self.server_api_version,
                 str(operation.id),
             )
             resp = await self.get_json(url)
@@ -4277,10 +1817,10 @@ class Mythic:
         if operator.base_disabled_commands is not None:
             data["add_disabled_commands"] = [await obj_to_json(operator)]
         url = "{}{}:{}/api/v{}/operations/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             str(operation.id),
         )
         resp = await self.put_json(url, data=data)
@@ -4301,10 +1841,10 @@ class Mythic:
             raise Exception("failed to get operation in remove_operator_for_operation")
         data = {"remove_members": [operator.username]}
         url = "{}{}:{}/api/v{}/operations/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             str(operation.id),
         )
         resp = await self.put_json(url, data=data)
@@ -4322,10 +1862,10 @@ class Mythic:
                 raise Exception("Failed to get_operation in update_operation")
             operation.id = resp.response.id
         url = "{}{}:{}/api/v{}/operations/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             str(operation.id),
         )
         send_data = await obj_to_json(operation)
@@ -4341,10 +1881,10 @@ class Mythic:
         Creates a new operation and specifies the admin of the operation
         """
         url = "{}{}:{}/api/v{}/operations/".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
         )
         data = await obj_to_json(operation)
         if "admin" in data:
@@ -4361,7 +1901,7 @@ class Mythic:
         Gets information about the current user
         """
         url = "{}{}:{}/api/v{}/operators/me".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.get_json(url)
         if resp.response_code == 200 and resp.status == "success":
@@ -4376,7 +1916,7 @@ class Mythic:
         if operator.id is None:
             # need to get the operator's ID first, which means we need to get all operators and match the username
             url = "{}{}:{}/api/v{}/operators/".format(
-                self._http, self.server_ip, self._server_port, self._server_api_version
+                self.http, self.server_ip, self.server_port, self.server_api_version
             )
             resp = await self.get_json(url)
             if resp.response_code == 200:
@@ -4390,10 +1930,10 @@ class Mythic:
             return resp
         else:
             url = "{}{}:{}/api/v{}/operators/{}".format(
-                self._http,
+                self.http,
                 self.server_ip,
-                self._server_port,
-                self._server_api_version,
+                self.server_port,
+                self.server_api_version,
                 str(operator.id),
             )
             resp = await self.get_json(url)
@@ -4407,7 +1947,7 @@ class Mythic:
         If the operator name already exists, just returns information about that operator.
         """
         url = "{}{}:{}/api/v{}/operators".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.post_json(
             url, data={"username": operator.username, "password": operator.password}
@@ -4433,10 +1973,10 @@ class Mythic:
                 raise Exception("Failed to get_operator in update_operator")
             operator.id = resp.response.id
         url = "{}{}:{}/api/v{}/operators/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             str(operator.id),
         )
         resp = await self.put_json(url, data=await obj_to_json(operator))
@@ -4452,7 +1992,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/apitokens".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.get_json(url)
         if resp.response_code == 200 and resp.status == "success":
@@ -4469,7 +2009,7 @@ class Mythic:
         """
         # token_type should be C2 or User
         url = "{}{}:{}/api/v{}/apitokens".format(
-            self._http, self._server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.post_json(url, data={"token_type": token_type})
         if resp.response_code == 200 and resp.status == "success":
@@ -4487,10 +2027,10 @@ class Mythic:
         """
         # take in an object and parse it if the value isn't explicitly given
         url = "{}{}:{}/api/v{}/apitokens/{}".format(
-            self._http,
-            self._server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.http,
+            self.server_ip,
+            self.server_port,
+            self.server_api_version,
             str(apitoken.id if isinstance(apitoken, APIToken) else apitoken["id"]),
         )
         resp = await self.delete_json(url)
@@ -4507,7 +2047,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/payloads/current_operation".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.get_json(url)
         if resp.response_code == 200:
@@ -4523,10 +2063,10 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/payloads/{}".format(
-            self._http,
-            self._server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.http,
+            self.server_ip,
+            self.server_port,
+            self.server_api_version,
             str(payload.uuid if isinstance(payload, Payload) else payload["uuid"]),
         )
         resp = await self.delete_json(url)
@@ -4541,6 +2081,7 @@ class Mythic:
         all_commands: bool = None,
         timeout=None,
         wait_for_build: bool = None,
+        exclude_commands: [str] = []
     ) -> MythicResponse:
         """
         :param payload:
@@ -4550,24 +2091,21 @@ class Mythic:
         "c2_profiles":[
           {"c2_profile_parameters":
             {
-              "AESPSK":"ElhUTijQn2klOtjlGyxs2uU6oq4PWD2Tboc5qaKzKCg=",
-              "USER_AGENT":"Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko",
               "callback_host":"https://domain.com",
               "callback_interval":"10",
               "callback_jitter":"23",
               "callback_port":"80",
-              "domain_front":"",
               "encrypted_exchange_check":"T",
               "killdate":"yyyy-mm-dd"
             },
-          "c2_profile":"HTTP"
+          "c2_profile":"http"
           }],
+        "selected_os": "macOS",
         "filename":"poseidon.bin",
         "tag":"this is my tag yo for initial access",
         "commands":["cat","cd","cp","curl","download","drives","exit","getenv","getuser","jobkill","jobs","jxa","keylog","keys","kill","libinject","listtasks","ls","mkdir","mv","portscan","ps","pwd","rm","screencapture","setenv","shell","sleep","socks","sshauth","triagedirectory","unsetenv","upload","xpc"],
         "build_parameters":[
           {"name":"mode","value":"default"},
-          {"name":"os","value":"darwin"}
           ]
         }"
         """
@@ -4583,14 +2121,35 @@ class Mythic:
                     {"c2_profile": k, "c2_profile_parameters": parameters}
                 )
         data["build_parameters"] = []
+        if payload.os is not None:
+            data['selected_os'] = payload.os
+        elif payload.selected_os is not None:
+            data["selected_os"] = payload.selected_os
         if all_commands:
             if payload.payload_type.id is None:
                 resp = await self.get_payloadtypes()
                 for p in resp.response:
-                    if p.ptype == payload.payload_type.ptype:
-                        payload.payload_type = p
+                    try:
+                        if p.ptype == payload.payload_type.ptype:
+                            payload.payload_type = p
+                    except Exception as e:
+                        print("[-] Error trying to get payload type list")
+                        await json_print(resp.response)
+                        return resp
             resp = await self.get_payloadtype_commands(payload.payload_type)
-            payload.commands = resp.response
+            # now iterate over the commands and make sure to not include script_only or wrong supported_os fields
+            commands = []
+            for c in resp.response:
+                if not c.script_only:
+                    try:
+                        attributes = json.loads(c.attributes)
+                        if len(attributes["supported_os"]) == 0:
+                            commands.append(c)
+                        elif data["selected_os"] in attributes["supported_os"]:
+                            commands.append(c)
+                    except Exception as e:
+                        commands.append(c)
+            payload.commands = [c for c in commands if c.cmd not in exclude_commands]
         if payload.commands is not None:
             data["commands"] = [c.cmd for c in payload.commands]
         else:
@@ -4599,12 +2158,9 @@ class Mythic:
             data['build_parameters'] = payload.build_parameters
         if payload.wrapped_payload is not None:
             data['wrapped_payload'] = payload.wrapped_payload.uuid
-        if payload.os is not None:
-            data['selected_os'] = payload.os
-        elif payload.selected_os is not None:
-            data["selected_os"] = payload.selected_os
+        
         url = "{}{}:{}/api/v{}/payloads/create".format(
-            self._http, self._server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.post_json(url, data=data)
         if resp.response_code == 200 and resp.status == "success":
@@ -4634,10 +2190,10 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/payloads/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             str(payload.uuid if isinstance(payload, Payload) else payload["uuid"]),
         )
         resp = await self.get_json(url)
@@ -4655,10 +2211,10 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/payloads/download/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             str(payload.uuid if isinstance(payload, Payload) else payload["uuid"]),
         )
         resp = await self.get_file(url)
@@ -4671,10 +2227,10 @@ class Mythic:
         Download a file that is either scheduled for upload or is finished downloading
         """
         url = "{}{}:{}/api/v{}/files/download/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             file.agent_file_id,
         )
         resp = await self.get_file(url)
@@ -4688,7 +2244,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/payloadtypes/".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.get_json(url)
         if resp.response_code == 200:
@@ -4712,10 +2268,10 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/payloadtypes/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             str(
                 payload_type.id
                 if isinstance(payload_type, PayloadType)
@@ -4739,10 +2295,10 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/payloadtypes/{}/commands".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             str(
                 payload_type.id
                 if isinstance(payload_type, PayloadType)
@@ -4762,7 +2318,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/tasks/".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.get_json(url)
         if resp.response_code == 200:
@@ -4781,10 +2337,10 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/tasks/callback/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             callback.id if isinstance(callback, Callback) else callback["id"],
         )
         resp = await self.get_json(url)
@@ -4804,10 +2360,10 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/tasks/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             task.id if isinstance(task, Task) else task["id"],
         )
         resp = await self.get_json(url)
@@ -4825,7 +2381,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/task_report_by_callback".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.get_json(url)
         if resp.response_code == 200:
@@ -4846,10 +2402,10 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/tasks/callback/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             task.callback.id if isinstance(task, Task) else task["callback"],
         )
         headers = self.get_headers()
@@ -4916,7 +2472,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/tasks/comments/{}".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version,
+            self.http, self.server_ip, self.server_port, self.server_api_version,
             task.id
         )
         if task.comment == "" or task.comment is None:
@@ -4936,7 +2492,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/credentials/current_operation".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.get_json(url)
         if resp.response_code == 200:
@@ -4950,7 +2506,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/credentials".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.post_json(url, data=await obj_to_json(credential))
         if resp.response_code == 200:
@@ -4964,10 +2520,10 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/credentials/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             str(credential.id),
         )
         resp = await self.put_json(url, data=await obj_to_json(credential))
@@ -4986,7 +2542,7 @@ class Mythic:
         if callback.id is None:
             raise Exception("Callback id is None or < 0, should be number >= 1")
         url = "{}{}:{}/api/v{}/callbacks/{}".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version, str(callback.id)
+            self.http, self.server_ip, self.server_port, self.server_api_version, str(callback.id)
         )
         resp = await self.get_json(url)
         if resp.response_code == 200 and resp.status == "success":
@@ -4999,7 +2555,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/callbacks".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.get_json(url)
         if resp.response_code == 200:
@@ -5014,7 +2570,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/operations/disabled_commands_profiles".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.get_json(url)
         if resp.response_code == 200:
@@ -5040,7 +2596,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/operations/disabled_commands_profile".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         data = {profile.name: {}}
         for payload_type in profile.payload_types:
@@ -5098,7 +2654,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/operations/disabled_commands_profile".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         data = {profile.name: {}}
         for payload_type in profile.payload_types:
@@ -5170,7 +2726,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/event_message".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.get_json(url)
         if resp.response_code == 200 and resp.status == "success":
@@ -5183,7 +2739,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/event_message".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.post_json(url, data=await obj_to_json(message))
         if resp.response_code == 200 and resp.status == "success":
@@ -5196,10 +2752,10 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/event_message/{}".format(
-            self._http,
+            self.http,
             self.server_ip,
-            self._server_port,
-            self._server_api_version,
+            self.server_port,
+            self.server_api_version,
             str(message.id),
         )
         resp = await self.put_json(url, data=await obj_to_json(message))
@@ -5213,7 +2769,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/event_message/delete".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         resp = await self.post_json(url, data={"messages": [message.id]})
         if resp.response_code == 200 and resp.status == "success":
@@ -5226,7 +2782,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/api/v{}/event_message/delete".format(
-            self._http, self.server_ip, self._server_port, self._server_api_version
+            self.http, self.server_ip, self.server_port, self.server_api_version
         )
         msgs = [m.id for m in messages]
         resp = await self.post_json(url, data={"messages": msgs})
@@ -5240,15 +2796,15 @@ class Mythic:
         """
         Login with username/password and store resulting access_token and refresh_token
         """
-        url = "{}{}:{}/auth".format(self._http, self._server_ip, self._server_port)
-        data = {"username": self.username, "password": self.password, "scripting_version": self._scripting_version}
-        print("[*] Connecting to Mythic as scripting_version {}".format(self._scripting_version))
+        url = "{}{}:{}/auth".format(self.http, self.server_ip, self.server_port)
+        data = {"username": self.username, "password": self.password, "scripting_version": self.scripting_version}
+        print("[*] Connecting to Mythic as scripting_version {}".format(self.scripting_version))
         resp = await self.post_json(url, data)
         if resp.response_code == 200:
             if resp.status == "error":
                 raise Exception("Failed to log in: " + resp.response["error"])
-            self._access_token = resp.response["access_token"]
-            self._refresh_token = resp.response["refresh_token"]
+            self.access_token = resp.response["access_token"]
+            self.refresh_token = resp.response["refresh_token"]
             return resp
         else:
             raise Exception("Failed to log in: " + json.dumps(resp, indent=2, default=lambda o: o.to_json()))
@@ -5282,7 +2838,7 @@ class Mythic:
         if timeout is None:
             timeout = self.global_timeout
         url = "{}{}:{}/ws/task/{}".format(
-            self._ws, self._server_ip, self._server_port, str(task_id)
+            self.ws, self.server_ip, self.server_port, str(task_id)
         )
         headers = self.get_headers()
         try:
@@ -5320,7 +2876,7 @@ class Mythic:
         if timeout is None:
             timeout = self.global_timeout
         url = "{}{}:{}/ws/payloads/{}".format(
-            self._ws, self._server_ip, self._server_port, str(payload_uuid)
+            self.ws, self.server_ip, self.server_port, str(payload_uuid)
         )
         headers = self.get_headers()
         try:
@@ -5362,7 +2918,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/unified_callback/{}".format(
-            self._ws, self._server_ip, self._server_port, str(callback_id)
+            self.ws, self.server_ip, self.server_port, str(callback_id)
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)
@@ -5378,7 +2934,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/new_callbacks/current_operation".format(
-            self._ws, self._server_ip, self._server_port
+            self.ws, self.server_ip, self.server_port
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)
@@ -5397,7 +2953,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/responses/by_task/{}".format(
-            self._ws, self._server_ip, self._server_port, str(task_id)
+            self.ws, self.server_ip, self.server_port, str(task_id)
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)
@@ -5415,7 +2971,7 @@ class Mythic:
         if timeout is None:
             timeout = self.global_timeout
         url = "{}{}:{}/ws/responses/by_task/{}".format(
-            self._ws, self._server_ip, self._server_port, str(task_id)
+            self.ws, self.server_ip, self.server_port, str(task_id)
         )
         headers = self.get_headers()
         responses = []
@@ -5449,7 +3005,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/files/current_operation".format(
-            self._ws, self._server_ip, self._server_port
+            self.ws, self.server_ip, self.server_port
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)
@@ -5465,7 +3021,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/files/new/current_operation".format(
-            self._ws, self._server_ip, self._server_port
+            self.ws, self.server_ip, self.server_port
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)
@@ -5480,7 +3036,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/responses/current_operation".format(
-            self._ws, self._server_ip, self._server_port
+            self.ws, self.server_ip, self.server_port
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)
@@ -5495,7 +3051,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/responses/new/current_operation".format(
-            self._ws, self._server_ip, self._server_port
+            self.ws, self.server_ip, self.server_port
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)
@@ -5510,7 +3066,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/tasks/current_operation".format(
-            self._ws, self._server_ip, self._server_port
+            self.ws, self.server_ip, self.server_port
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)
@@ -5525,7 +3081,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/tasks/new/current_operation".format(
-            self._ws, self._server_ip, self._server_port
+            self.ws, self.server_ip, self.server_port
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)
@@ -5540,7 +3096,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/payloads/info/current_operation".format(
-            self._ws, self._server_ip, self._server_port
+            self.ws, self.server_ip, self.server_port
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)
@@ -5555,7 +3111,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/credentials/current_operation".format(
-            self._ws, self._server_ip, self._server_port
+            self.ws, self.server_ip, self.server_port
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout,exception_handler)
@@ -5570,7 +3126,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/credentials/new/current_operation".format(
-            self._ws, self._server_ip, self._server_port
+            self.ws, self.server_ip, self.server_port
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)
@@ -5585,7 +3141,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/events_all/current_operation".format(
-            self._ws, self._server_ip, self._server_port
+            self.ws, self.server_ip, self.server_port
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)
@@ -5600,7 +3156,7 @@ class Mythic:
         :return:
         """
         url = "{}{}:{}/ws/events_notifier/current_operation".format(
-            self._ws, self._server_ip, self._server_port
+            self.ws, self.server_ip, self.server_port
         )
         if callback_function:
             task = await self.stream_output(url, callback_function, timeout, exception_handler)

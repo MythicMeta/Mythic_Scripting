@@ -18,8 +18,7 @@ Version 0.0.15 of the `mythic` package supports version 2.2.1 of the Mythic proj
 
 Version 0.0.20 of the `mythic` package supports version 2.2.6 of the Mythic project (reports as version "3").
 
-Version 0.0.21 of the `mythic` package supports version 2.2.8 of the Mythic project (reports as version "3").
-Version 0.0.22 of the `mythic` package supports version 2.2.8 of the Mythic project (resports as version "3").
+Version 0.0.21-24 of the `mythic` package supports version 2.2.8+ of the Mythic project (reports as version "3").
 
 
 ```

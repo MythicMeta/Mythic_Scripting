@@ -89,6 +89,7 @@ class Operation:
         self.icon_url = icon_url
         self.webhook_message = webhook_message
         self.id = id
+        self.name = name
         if members is not None:
             if isinstance(members, list):
                 self.members = [

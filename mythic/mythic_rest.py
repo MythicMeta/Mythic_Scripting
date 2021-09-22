@@ -2056,6 +2056,22 @@ class Mythic:
             resp.response = [Payload(**x) for x in resp.response]
         return resp
 
+    async def generate_mod_rewrite(self, target=Union[Payload, str]) -> MythicResponse:
+        target_uuid = ""
+        if isinstance(target, Payload):
+            target_uuid = target.uuid 
+            if target_uuid is None or target_uuid == "":
+                raise Exception("Missing required parameter mythic_rest.Payload(uuid='uuid here')")
+        else:
+            target_uuid = target
+        url = f'{self.http}{self.server_ip}:{self.server_port}/api/v{self.server_api_version}/redirect_rules_webhook'
+        resp = await self.post_json(url, data={'input': {'uuid': target_uuid}})
+        if resp.response_code != 200:
+            raise Exception("Connection failed with error code: " + str(resp.response_code))
+        if resp.status == "success":
+            resp.response = resp.response["output"]
+        return resp
+
     async def remove_payload(self, payload: Union[Payload, Dict]) -> MythicResponse:
         """
         Mark a payload as deleted in the database and remove it from disk

@@ -18,9 +18,9 @@ Version 0.0.15 of the `mythic` package supports version 2.2.1 of the Mythic proj
 
 Version 0.0.20 of the `mythic` package supports version 2.2.6 of the Mythic project (reports as version "3").
 
-Version 0.0.21-24 of the `mythic` package supports version 2.2.8+ of the Mythic project (reports as version "3").
+Version 0.0.21-25 of the `mythic` package supports version 2.2.8+ of the Mythic project (reports as version "3").
 
-Version 0.1.0 of the `mythic` package supports version 2.3+ of the Mythic project (reports as version "4"). This version uses the new GraphQL interfaces.
+Version 0.0.26 of the `mythic` package supports version 2.3+ of the Mythic project (reports as version "3"). This version uses the new GraphQL interfaces.
 
 
 ```

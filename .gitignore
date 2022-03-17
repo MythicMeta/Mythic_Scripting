@@ -3,3 +3,5 @@ dist/
 mythic.egg-info/
 mythic/.DS_Store
 mythic/__pycache__/
+mythic_schema.graphql
+example.py

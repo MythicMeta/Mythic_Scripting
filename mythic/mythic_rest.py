@@ -1,10 +1,11 @@
-import aiohttp
 import asyncio
+import base64
 import json
 import sys
-from typing import Dict, List, Union
 from time import time
-import base64
+from typing import Dict, List, Union
+
+import aiohttp
 
 
 async def json_print(thing):
@@ -52,9 +53,7 @@ class APIToken:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -93,7 +92,12 @@ class Operation:
         if members is not None:
             if isinstance(members, list):
                 self.members = [
-                    Operator(username=x) if isinstance(x, str) else Operator(**x) if isinstance(x, Dict) else x for x in members
+                    Operator(username=x)
+                    if isinstance(x, str)
+                    else Operator(**x)
+                    if isinstance(x, Dict)
+                    else x
+                    for x in members
                 ]
             else:
                 raise ValueError("members must be a list")
@@ -116,9 +120,7 @@ class Operation:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -164,7 +166,7 @@ class Operator:
         self.last_failed_login_timestamp = last_failed_login_timestamp
         if self.current_operation is not None:
             self.current_operation.id = current_operation_id
-        if view_mode in ["spectator", "operator", "developer", None]:
+        if view_mode in ["spectator", "operator", "developer", "lead", None]:
             self.view_mode = view_mode
         else:
             raise Exception("Bad value for view_mode")
@@ -186,9 +188,7 @@ class Operator:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -274,9 +274,7 @@ class PayloadType:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -346,9 +344,7 @@ class Command:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -358,9 +354,7 @@ class Command:
 class CommandParameters:
     def __init__(
         self,
-        command: Union[
-            Command, int
-        ] = None,  # database ID for the corresponding command
+        command: Union[Command, int] = None,  # database ID for the corresponding command
         cmd: str = None,  # cmd string the command refers to (like shell)
         payload_type: Union[PayloadType, str] = None,
         name: str = None,
@@ -420,9 +414,7 @@ class CommandParameters:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -485,9 +477,7 @@ class C2Profile:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -562,9 +552,7 @@ class C2ProfileParameters:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -608,13 +596,13 @@ class Callback:
         external_ip: str = None,
         payload_type_id: int = None,
         supported_profiles: List[Union[C2Profile, Dict]] = None,
-        tokens: [dict] = None,
-        loaded_commands: [str] = None,
+        tokens: list = None,
+        loaded_commands: list = None,
         c2_profiles: dict = None,
-        build_parameters: [dict] = None,
+        build_parameters: list = None,
         payload_uuid: str = None,
         payload_name: str = None,
-        path: [str] = None,
+        path: list = None,
         process_name: str = None,
         **kwargs,
     ):
@@ -684,7 +672,10 @@ class Callback:
         if supported_profiles is None:
             self.supported_profiles = supported_profiles
         else:
-            self.supported_profiles = [x if isinstance(x, C2Profile) else C2Profile(**x) for x in supported_profiles]
+            self.supported_profiles = [
+                x if isinstance(x, C2Profile) else C2Profile(**x)
+                for x in supported_profiles
+            ]
         vars(self).update(kwargs)
 
     def to_json(self):
@@ -702,9 +693,7 @@ class Callback:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -762,9 +751,7 @@ class TaskFile:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -815,7 +802,7 @@ class Task:
         group_callback_function: str = None,
         completed_callback_function: str = None,
         subtask_group_name: str = None,
-        **kwargs
+        **kwargs,
     ):
         if isinstance(command, Command) or command is None:
             self.command = command
@@ -914,9 +901,7 @@ class Task:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -1044,9 +1029,7 @@ class Payload:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -1136,9 +1119,7 @@ class FileMeta:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -1180,9 +1161,7 @@ class Response:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -1249,9 +1228,7 @@ class Credential:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -1306,9 +1283,7 @@ class Keylog:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -1351,9 +1326,7 @@ class DisabledCommandsProfile:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -1412,9 +1385,7 @@ class EventMessage:
                             getattr(self, k), default=lambda o: o.to_json()
                         )
                     else:
-                        r[k] = json.dumps(
-                            getattr(self, k), default=lambda o: o.to_json()
-                        )
+                        r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -1428,7 +1399,7 @@ class MythicResponse:
         raw_response: Dict[str, str] = None,
         response_code: int = None,
         status: str = None,
-        **kwargs
+        **kwargs,
     ):
         # set the response_code and raw_response automatically
         self.response_code = response_code
@@ -1505,13 +1476,9 @@ class Mythic:
                     r[k] = getattr(self, k)
             except:
                 if k[0] == "_":
-                    r[k[1:]] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    r[k[1:]] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
                 else:
-                    r[k] = json.dumps(
-                        getattr(self, k), default=lambda o: o.to_json()
-                    )
+                    r[k] = json.dumps(getattr(self, k), default=lambda o: o.to_json())
         return r
 
     def __str__(self):
@@ -1520,7 +1487,6 @@ class Mythic:
     @property
     def apitoken(self):
         return self._apitoken
-    
 
     @apitoken.setter
     def apitoken(self, apitoken=None):
@@ -1548,12 +1514,12 @@ class Mythic:
                         response_code=resp.status, raw_response=await resp.json()
                     )
         except OSError as o:
-            #print(o)
+            # print(o)
             return MythicResponse(
                 response_code=0, raw_response={"status": "error", "error": str(o)}
             )
         except Exception as e:
-            #print(e)
+            # print(e)
             return MythicResponse(
                 response_code=0, raw_response={"status": "error", "error": str(e)}
             )
@@ -1564,7 +1530,6 @@ class Mythic:
             async with session.get(url, headers=headers, ssl=False) as resp:
                 data = await resp.read()
                 return data
-
 
     async def put_json(self, url, data) -> MythicResponse:
         headers = self.get_headers()
@@ -1661,7 +1626,9 @@ class Mythic:
             elif "agent_callback_id" in json_data:
                 return Callback(**json_data)
             else:
-                raise Exception("Unknown Mythic Object: " + json.dumps(json_data, indent=2))
+                raise Exception(
+                    "Unknown Mythic Object: " + json.dumps(json_data, indent=2)
+                )
         except Exception as e:
             raise Exception("Failed to decode json data: " + str(e))
 
@@ -1689,7 +1656,7 @@ class Mythic:
         elif error_code == 1013:
             return "TRY_AGAIN_LATER"
         else:
-            return "UNKNOWN ERROR CODE: {}".format(str(error_code)) 
+            return "UNKNOWN ERROR CODE: {}".format(str(error_code))
 
     async def thread_output_helper(
         self, url, callback_function=None, timeout=None, exception_handler=None
@@ -1711,7 +1678,11 @@ class Mythic:
                             )
                         msg = await ws.receive()
                         if msg.type == aiohttp.WSMsgType.CLOSE:
-                            raise Exception("Websocket closed, {}".format(await self.get_ws_error(msg.data)))
+                            raise Exception(
+                                "Websocket closed, {}".format(
+                                    await self.get_ws_error(msg.data)
+                                )
+                            )
                         if msg.data is None:
                             raise Exception(
                                 "Got no data from websocket: {}".format(str(msg))
@@ -1722,19 +1693,22 @@ class Mythic:
                             )
                             asyncio.ensure_future(task)
                     except Exception as e:
-                        raise Exception("Got exception reading from websocket, exiting websocket: " + str(e))
+                        raise Exception(
+                            "Got exception reading from websocket, exiting websocket: "
+                            + str(e)
+                        )
         except Exception as e:
             if exception_handler is not None and callable(exception_handler):
-                task = asyncio.get_event_loop().create_task(
-                    exception_handler(self, e)
-                )
+                task = asyncio.get_event_loop().create_task(exception_handler(self, e))
                 asyncio.ensure_future(task)
                 return
             else:
                 print("Failed to get websocket connection: " + str(e))
                 return
 
-    async def stream_output(self, url, callback_function, timeout, exception_handler) -> asyncio.Task:
+    async def stream_output(
+        self, url, callback_function, timeout, exception_handler
+    ) -> asyncio.Task:
         task = asyncio.get_event_loop().create_task(
             self.thread_output_helper(url, callback_function, timeout, exception_handler)
         )
@@ -1787,7 +1761,10 @@ class Mythic:
                     if o.name == operation.name:
                         resp.response = o
                         return resp
-            raise Exception("Failed to find operation: " + json.dumps(resp, indent=2, default=lambda o: o.to_json()))
+            raise Exception(
+                "Failed to find operation: "
+                + json.dumps(resp, indent=2, default=lambda o: o.to_json())
+            )
         else:
             url = "{}{}:{}/api/v{}/operations/{}".format(
                 self.http,
@@ -1927,7 +1904,10 @@ class Mythic:
                     if o["username"] == operator.username:
                         resp.response = Operator(**o)
                         return resp
-                raise Exception("Operator not found: " + json.dumps(resp, indent=2, default=lambda o: o.to_json()))
+                raise Exception(
+                    "Operator not found: "
+                    + json.dumps(resp, indent=2, default=lambda o: o.to_json())
+                )
             return resp
         else:
             url = "{}{}:{}/api/v{}/operators/{}".format(
@@ -1961,7 +1941,10 @@ class Mythic:
                 if resp2.status == "success":
                     return resp2
             except Exception as e:
-                raise Exception("Unable to create operator and no active operator found: " + json.dumps(resp, indent=2, default=lambda o: o.to_json()))
+                raise Exception(
+                    "Unable to create operator and no active operator found: "
+                    + json.dumps(resp, indent=2, default=lambda o: o.to_json())
+                )
         return resp
 
     async def update_operator(self, operator: Operator) -> MythicResponse:
@@ -2059,15 +2042,19 @@ class Mythic:
     async def generate_mod_rewrite(self, target=Union[Payload, str]) -> MythicResponse:
         target_uuid = ""
         if isinstance(target, Payload):
-            target_uuid = target.uuid 
+            target_uuid = target.uuid
             if target_uuid is None or target_uuid == "":
-                raise Exception("Missing required parameter mythic_rest.Payload(uuid='uuid here')")
+                raise Exception(
+                    "Missing required parameter mythic_rest.Payload(uuid='uuid here')"
+                )
         else:
             target_uuid = target
-        url = f'{self.http}{self.server_ip}:{self.server_port}/api/v{self.server_api_version}/redirect_rules_webhook'
-        resp = await self.post_json(url, data={'input': {'uuid': target_uuid}})
+        url = f"{self.http}{self.server_ip}:{self.server_port}/api/v{self.server_api_version}/redirect_rules_webhook"
+        resp = await self.post_json(url, data={"input": {"uuid": target_uuid}})
         if resp.response_code != 200:
-            raise Exception("Connection failed with error code: " + str(resp.response_code))
+            raise Exception(
+                "Connection failed with error code: " + str(resp.response_code)
+            )
         if resp.status == "success":
             resp.response = resp.response["output"]
         return resp
@@ -2098,7 +2085,7 @@ class Mythic:
         all_commands: bool = None,
         timeout=None,
         wait_for_build: bool = None,
-        exclude_commands: [str] = []
+        exclude_commands: list = [],
     ) -> MythicResponse:
         """
         :param payload:
@@ -2139,7 +2126,7 @@ class Mythic:
                 )
         data["build_parameters"] = []
         if payload.os is not None:
-            data['selected_os'] = payload.os
+            data["selected_os"] = payload.os
         elif payload.selected_os is not None:
             data["selected_os"] = payload.selected_os
         if all_commands:
@@ -2172,10 +2159,10 @@ class Mythic:
         else:
             data["commands"] = []
         if payload.build_parameters is not None:
-            data['build_parameters'] = payload.build_parameters
+            data["build_parameters"] = payload.build_parameters
         if payload.wrapped_payload is not None:
-            data['wrapped_payload'] = payload.wrapped_payload.uuid
-        
+            data["wrapped_payload"] = payload.wrapped_payload.uuid
+
         url = "{}{}:{}/api/v{}/payloads/create".format(
             self.http, self.server_ip, self.server_port, self.server_api_version
         )
@@ -2196,9 +2183,7 @@ class Mythic:
                     resp.response = status
         return resp
 
-    async def get_one_payload_info(
-        self, payload: Union[Payload, Dict]
-    ) -> MythicResponse:
+    async def get_one_payload_info(self, payload: Union[Payload, Dict]) -> MythicResponse:
         """
         Get information about a specific payload
         :param payload:
@@ -2366,9 +2351,7 @@ class Mythic:
             resp.response = [Task(**x) for x in resp.response]
         return resp
 
-    async def get_all_responses_for_task(
-        self, task: Union[Task, Dict]
-    ) -> MythicResponse:
+    async def get_all_responses_for_task(self, task: Union[Task, Dict]) -> MythicResponse:
         """
         For the specified task, get all the responses
         :param task:
@@ -2483,14 +2466,17 @@ class Mythic:
                 )
         return resp
 
-    async def set_comment_on_task(self, task:Task) -> MythicResponse:
+    async def set_comment_on_task(self, task: Task) -> MythicResponse:
         """
         Get all of the credentials associated with the user's current operation
         :return:
         """
         url = "{}{}:{}/api/v{}/tasks/comments/{}".format(
-            self.http, self.server_ip, self.server_port, self.server_api_version,
-            task.id
+            self.http,
+            self.server_ip,
+            self.server_port,
+            self.server_api_version,
+            task.id,
         )
         if task.comment == "" or task.comment is None:
             resp = await self.delete_json(url)
@@ -2498,7 +2484,7 @@ class Mythic:
             resp = await self.post_json(url, data={"comment": task.comment})
         if resp.response_code == 200:
             # update the response with APIToken objects instead of just a dictionary
-            resp.response = Task(**resp.response['task'])
+            resp.response = Task(**resp.response["task"])
         return resp
 
     # ============== CREDENTIAL ENDPOINTS ========================
@@ -2559,7 +2545,11 @@ class Mythic:
         if callback.id is None:
             raise Exception("Callback id is None or < 0, should be number >= 1")
         url = "{}{}:{}/api/v{}/callbacks/{}".format(
-            self.http, self.server_ip, self.server_port, self.server_api_version, str(callback.id)
+            self.http,
+            self.server_ip,
+            self.server_port,
+            self.server_api_version,
+            str(callback.id),
         )
         resp = await self.get_json(url)
         if resp.response_code == 200 and resp.status == "success":
@@ -2634,9 +2624,7 @@ class Mythic:
                             if payload_type.ptype == entry["payload_type"]:
                                 ptype_found = True
                                 payload_type.commands.append(
-                                    Command(
-                                        cmd=entry["command"], id=entry["command_id"]
-                                    )
+                                    Command(cmd=entry["command"], id=entry["command_id"])
                                 )
                         if not ptype_found:
                             p.payload_types.append(
@@ -2692,9 +2680,7 @@ class Mythic:
                             if payload_type.ptype == entry["payload_type"]:
                                 ptype_found = True
                                 payload_type.commands.append(
-                                    Command(
-                                        cmd=entry["command"], id=entry["command_id"]
-                                    )
+                                    Command(cmd=entry["command"], id=entry["command_id"])
                                 )
                         if not ptype_found:
                             p.payload_types.append(
@@ -2814,8 +2800,16 @@ class Mythic:
         Login with username/password and store resulting access_token and refresh_token
         """
         url = "{}{}:{}/auth".format(self.http, self.server_ip, self.server_port)
-        data = {"username": self.username, "password": self.password, "scripting_version": self.scripting_version}
-        print("[*] Connecting to Mythic as scripting_version {}".format(self.scripting_version))
+        data = {
+            "username": self.username,
+            "password": self.password,
+            "scripting_version": self.scripting_version,
+        }
+        print(
+            "[*] Connecting to Mythic as scripting_version {}".format(
+                self.scripting_version
+            )
+        )
         resp = await self.post_json(url, data)
         if resp.response_code == 200:
             if resp.status == "error":
@@ -2824,7 +2818,10 @@ class Mythic:
             self.refresh_token = resp.response["refresh_token"]
             return resp
         else:
-            raise Exception("Failed to log in: " + json.dumps(resp, indent=2, default=lambda o: o.to_json()))
+            raise Exception(
+                "Failed to log in: "
+                + json.dumps(resp, indent=2, default=lambda o: o.to_json())
+            )
             sys.exit(1)
 
     async def set_or_create_apitoken(self, token_type="User"):
@@ -2878,9 +2875,14 @@ class Mythic:
                             ):
                                 return task
                     except Exception as e:
-                        raise Exception("Exception while waiting for task status change: " + str(e))
+                        raise Exception(
+                            "Exception while waiting for task status change: " + str(e)
+                        )
         except Exception as e:
-            raise Exception("Exception in outer try/catch while waiting for task status change: " + str(e))
+            raise Exception(
+                "Exception in outer try/catch while waiting for task status change: "
+                + str(e)
+            )
 
     async def wait_for_payload_status_change(self, payload_uuid, status, timeout=None):
         """
@@ -2918,9 +2920,14 @@ class Mythic:
                             ):
                                 return payload
                     except Exception as e:
-                        raise Exception("Exception while waiting for payload status change: " + str(e))
+                        raise Exception(
+                            "Exception while waiting for payload status change: " + str(e)
+                        )
         except Exception as e:
-            raise Exception("Exception in outer try/catch while waiting for payload status change: " + str(e))
+            raise Exception(
+                "Exception in outer try/catch while waiting for payload status change: "
+                + str(e)
+            )
 
     # ============= WEBSOCKET NOTIFICATION FUNCTIONS ===============
 
@@ -2938,12 +2945,18 @@ class Mythic:
             self.ws, self.server_ip, self.server_port, str(callback_id)
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
-    async def listen_for_new_callbacks(self, callback_function=None, timeout=None, exception_handler=None):
+    async def listen_for_new_callbacks(
+        self, callback_function=None, timeout=None, exception_handler=None
+    ):
         """
         Uses websockets to listen for all notifications related new callbacks.
         To stop listening, call cancel() on the result from this function call
@@ -2954,9 +2967,13 @@ class Mythic:
             self.ws, self.server_ip, self.server_port
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
     async def listen_for_responses_for_task(
@@ -2973,9 +2990,13 @@ class Mythic:
             self.ws, self.server_ip, self.server_port, str(task_id)
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
     async def gather_task_responses(self, task_id, timeout=None) -> List:
@@ -3012,9 +3033,13 @@ class Mythic:
                     except Exception as e:
                         raise Exception("Exception while gathering responses: " + str(e))
         except Exception as e:
-            raise Exception("Exception in our try/catch while gathering responses: " + str(e))
+            raise Exception(
+                "Exception in our try/catch while gathering responses: " + str(e)
+            )
 
-    async def listen_for_all_files(self, callback_function=None, timeout=None, exception_handler=None):
+    async def listen_for_all_files(
+        self, callback_function=None, timeout=None, exception_handler=None
+    ):
         """
         Uses websockets to listen for all file notifications within mythic for the current operation.
         This includes payloads, uploads, downloads, screenshots.
@@ -3025,12 +3050,18 @@ class Mythic:
             self.ws, self.server_ip, self.server_port
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
-    async def listen_for_new_files(self, callback_function=None, timeout=None, exception_handler=None):
+    async def listen_for_new_files(
+        self, callback_function=None, timeout=None, exception_handler=None
+    ):
         """
         Uses websockets to listen for all file notifications within mythic for the current operation.
         This includes uploads, downloads.
@@ -3041,12 +3072,18 @@ class Mythic:
             self.ws, self.server_ip, self.server_port
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
-    async def listen_for_all_responses(self, callback_function=None, timeout=None, exception_handler=None):
+    async def listen_for_all_responses(
+        self, callback_function=None, timeout=None, exception_handler=None
+    ):
         """
         Uses websockets to listen for all response notifications within mythic for the current operation.
         :param callback_function: gets called on each notification
@@ -3056,12 +3093,18 @@ class Mythic:
             self.ws, self.server_ip, self.server_port
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
-    async def listen_for_new_responses(self, callback_function=None, timeout=None, exception_handler=None):
+    async def listen_for_new_responses(
+        self, callback_function=None, timeout=None, exception_handler=None
+    ):
         """
         Uses websockets to listen for all new response notifications within mythic for the current operation.
         :param callback_function: gets called on each notification
@@ -3071,12 +3114,18 @@ class Mythic:
             self.ws, self.server_ip, self.server_port
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
-    async def listen_for_all_tasks(self, callback_function=None, timeout=None, exception_handler=None):
+    async def listen_for_all_tasks(
+        self, callback_function=None, timeout=None, exception_handler=None
+    ):
         """
         Uses websockets to listen for all tasks within mythic for the current operation.
         :param callback_function: gets called on each notification
@@ -3086,12 +3135,18 @@ class Mythic:
             self.ws, self.server_ip, self.server_port
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
-    async def listen_for_new_tasks(self, callback_function=None, timeout=None, exception_handler=None):
+    async def listen_for_new_tasks(
+        self, callback_function=None, timeout=None, exception_handler=None
+    ):
         """
         Uses websockets to listen for all new tasks within mythic for the current operation.
         :param callback_function: gets called on each notification
@@ -3101,12 +3156,18 @@ class Mythic:
             self.ws, self.server_ip, self.server_port
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
-    async def listen_for_all_payloads(self, callback_function=None, timeout=None, exception_handler=None):
+    async def listen_for_all_payloads(
+        self, callback_function=None, timeout=None, exception_handler=None
+    ):
         """
         Uses websockets to listen for all payloads within mythic for the current operation.
         :param callback_function: gets called on each notification
@@ -3116,12 +3177,18 @@ class Mythic:
             self.ws, self.server_ip, self.server_port
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
-    async def listen_for_all_credentials(self, callback_function=None, timeout=None, exception_handler=None):
+    async def listen_for_all_credentials(
+        self, callback_function=None, timeout=None, exception_handler=None
+    ):
         """
         Uses websockets to listen for credentials within mythic for the current operation.
         :param callback_function: gets called on each notification
@@ -3131,12 +3198,18 @@ class Mythic:
             self.ws, self.server_ip, self.server_port
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout,exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
-    async def listen_for_new_credentials(self, callback_function=None, timeout=None, exception_handler=None) :
+    async def listen_for_new_credentials(
+        self, callback_function=None, timeout=None, exception_handler=None
+    ):
         """
         Uses websockets to listen for new credentials within mythic for the current operation.
         :param callback_function: gets called on each notification
@@ -3146,12 +3219,18 @@ class Mythic:
             self.ws, self.server_ip, self.server_port
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
-    async def listen_for_all_event_messages(self, callback_function=None, timeout=None, exception_handler=None):
+    async def listen_for_all_event_messages(
+        self, callback_function=None, timeout=None, exception_handler=None
+    ):
         """
         Uses websockets to listen for event messages within mythic for the current operation.
         :param callback_function: gets called on each notification
@@ -3161,12 +3240,18 @@ class Mythic:
             self.ws, self.server_ip, self.server_port
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout, exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task
 
-    async def listen_for_new_event_messages(self, callback_function=None, timeout=None, exception_handler=None):
+    async def listen_for_new_event_messages(
+        self, callback_function=None, timeout=None, exception_handler=None
+    ):
         """
         Uses websockets to listen for new event messages within mythic for the current operation.
         :param callback_function: gets called on each notification
@@ -3176,7 +3261,11 @@ class Mythic:
             self.ws, self.server_ip, self.server_port
         )
         if callback_function:
-            task = await self.stream_output(url, callback_function, timeout, exception_handler)
+            task = await self.stream_output(
+                url, callback_function, timeout, exception_handler
+            )
         else:
-            task = await self.stream_output(url, self.print_websocket_output, timeout,exception_handler)
+            task = await self.stream_output(
+                url, self.print_websocket_output, timeout, exception_handler
+            )
         return task

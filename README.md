@@ -22,21 +22,8 @@ Version 0.0.21-25 of the `mythic` package supports version 2.2.8+ of the Mythic 
 
 Version 0.0.26 of the `mythic` package supports version 2.3+ of the Mythic project (reports as version "3").
 
-Version 0.0.27-rc1 of the `mythic` package supports version 2.3+ of the Mythic project utilizing the new GraphQL endpoints and reports as version "3".
-
-
-```
-from mythic import mythic_rest
-mythic = mythic_rest.Mythic(
-    username="mythic_admin",
-    password="mythic_password",
-    server_ip="192.168.205.151",
-    server_port="7443",
-    ssl=True,
-    global_timeout=-1,
-)
-await mythic.login()
-```
+Version 0.0.28 of the `mythic` package supports version 2.3+ of the Mythic project utilizing the new GraphQL endpoints and reports as version "3".
+This will be the last version that supports the old mythic_rest interface. Starting with version 0.1.0, the `mythic` PyPi package will only support the new GraphQL interface and will report as version "4".
 
 ## New GraphQL Interface
 
@@ -55,6 +42,7 @@ async def main():
         password="mythic_password",
         server_ip="192.168.53.139",
         server_port=7443,
+        timeout=-1
     )
 
     # ################ Registering a file with Mythic for use in Tasking ################
@@ -310,6 +298,6 @@ The Mythic documentation has a whole section on scripting examples (https://docs
 To run unit testing:
 
 ```
-pip3 install pytest
+pip3 install pytest, gql[aiohttp,websockets], aiohttp, asyncio
 make all_tests
 ```

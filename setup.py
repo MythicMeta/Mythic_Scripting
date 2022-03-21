@@ -11,7 +11,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="mythic",
-    version="0.0.27-rc1",
+    version="0.0.28",
     description="Interact with Mythic C2 Framework Instances",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -26,6 +26,6 @@ setup(
     ],
     packages=["mythic"],
     include_package_data=True,
-    install_requires=["aiohttp", "asyncio"],
+    install_requires=["aiohttp", "asyncio", "gql[aiohttp,websockets]"],
     entry_points={},
 )

@@ -1465,6 +1465,17 @@ class Mythic:
         self.ws = "ws://" if not ssl else "wss://"
         self.global_timeout = global_timeout if global_timeout is not None else -1
         self.scripting_version = 3
+        print("[!] ----- DEPRECATION WARNING --------")
+        print(
+            "[!] This is the last release of Mythic that'll have the mythic_rest interface"
+        )
+        print(
+            "[!] Starting in PyPi version 0.1.0, there will only be the new GraphQL interfaces"
+        )
+        print(
+            "[!] More information can be found here: https://github.com/MythicMeta/Mythic_Scripting#new-graphql-interface"
+        )
+        print("[!] ------ END DEPRECATION WARNING -------")
 
     def to_json(self):
         r = {}

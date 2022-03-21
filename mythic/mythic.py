@@ -168,7 +168,7 @@ async def get_all_callbacks(
             {custom_return_attributes if custom_return_attributes is not None else '...callback_fragment'}
         }}
     }}
-    {graphql_queries.callback_fragment}
+    {graphql_queries.callback_fragment if custom_return_attributes is None else ''}
     """
     initial_tasks = await mythic_utilities.graphql_post(
         mythic=mythic, query=query, variables=None
@@ -194,7 +194,7 @@ async def get_all_active_callbacks(
             {custom_return_attributes if custom_return_attributes is not None else '...callback_fragment'}
         }}
     }}
-    {graphql_queries.callback_fragment}
+    {graphql_queries.callback_fragment if custom_return_attributes is None else ''}
     """
     initial_tasks = await mythic_utilities.graphql_post(
         mythic=mythic, query=query, variables=None
@@ -224,7 +224,7 @@ async def subscribe_new_callbacks(
                 {custom_return_attributes if custom_return_attributes is not None else '...callback_fragment'}
             }}
         }}
-        {graphql_queries.callback_fragment}
+        {graphql_queries.callback_fragment if custom_return_attributes is None else ''}
         """
         variables = {"now": str(datetime.utcnow()), "fetch_limit": fetch_limit}
         async for result in mythic_utilities.graphql_subscription(
@@ -351,7 +351,7 @@ async def get_all_tasks(
                 {custom_return_attributes if custom_return_attributes is not None else '...task_fragment'}
             }}
         }}
-        {graphql_queries.task_fragment}
+        {graphql_queries.task_fragment if custom_return_attributes is None else ''}
         """
         variables = {"callback_id": callback_id}
     else:
@@ -361,7 +361,7 @@ async def get_all_tasks(
                 {custom_return_attributes if custom_return_attributes is not None else '...task_fragment'}
             }}
         }}
-        {graphql_queries.task_fragment}
+        {graphql_queries.task_fragment if custom_return_attributes is None else ''}
         """
         variables = None
     initial_tasks = await mythic_utilities.graphql_post(
@@ -396,7 +396,7 @@ async def subscribe_new_tasks(
                     {custom_return_attributes if custom_return_attributes is not None else '...task_fragment'}
                 }}
             }}
-            {graphql_queries.task_fragment}
+            {graphql_queries.task_fragment if custom_return_attributes is None else ''}
             """
             variables = {
                 "now": str(datetime.utcnow()),
@@ -410,7 +410,7 @@ async def subscribe_new_tasks(
                     {custom_return_attributes if custom_return_attributes is not None else '...task_fragment'}
                 }}
             }}
-            {graphql_queries.task_fragment}
+            {graphql_queries.task_fragment if custom_return_attributes is None else ''}
             """
             variables = {
                 "now": str(datetime.utcnow()),
@@ -455,7 +455,7 @@ async def subscribe_new_tasks_and_updates(
                     {custom_return_attributes if custom_return_attributes is not None else '...task_fragment'}
                 }}
             }}
-            {graphql_queries.task_fragment}
+            {graphql_queries.task_fragment if custom_return_attributes is None else ''}
             """
             variables = {
                 "now": str(datetime.utcnow()),
@@ -469,7 +469,7 @@ async def subscribe_new_tasks_and_updates(
                     {custom_return_attributes if custom_return_attributes is not None else '...task_fragment'}
                 }}
             }}
-            {graphql_queries.task_fragment}
+            {graphql_queries.task_fragment if custom_return_attributes is None else ''}
             """
             variables = {
                 "now": str(datetime.utcnow()),
@@ -629,7 +629,7 @@ async def waitfor_task_status(
             {custom_return_attributes if custom_return_attributes is not None else '...task_fragment'}
         }}
     }}
-    {graphql_queries.task_fragment}
+    {graphql_queries.task_fragment if custom_return_attributes is None else ''}
     """
     variables = {"task_id": task_id}
     async for result in mythic_utilities.graphql_subscription(
@@ -736,7 +736,7 @@ async def get_all_filebrowser_data(
             {custom_return_attributes if custom_return_attributes is not None else '...filebrowser_fragment'}
         }}
     }}
-    {graphql_queries.filebrowser_fragment}
+    {graphql_queries.filebrowser_fragment if custom_return_attributes is None else ''}
     """
     initial_filebrowserobjs = await mythic_utilities.graphql_post(
         mythic=mythic, query=query, variables=None
@@ -766,7 +766,7 @@ async def subscribe_new_filebrowser(
                  {custom_return_attributes if custom_return_attributes is not None else '...filebrowser_fragment'}
             }}
         }}
-        {graphql_queries.filebrowser_fragment}
+        {graphql_queries.filebrowser_fragment if custom_return_attributes is None else ''}
         """
         latest_time = str(datetime.utcnow())
         while True:
@@ -963,7 +963,7 @@ async def waitfor_payload_complete(
                 {custom_return_attributes if custom_return_attributes is not None else '...payload_build_fragment'}
             }}
         }}
-        {graphql_queries.payload_build_fragment}
+        {graphql_queries.payload_build_fragment if custom_return_attributes is None else ''}
         """
     variables = {"uuid": payload_uuid}
     async for result in mythic_utilities.graphql_subscription(
@@ -988,7 +988,7 @@ async def get_all_payloads(
             {custom_return_attributes if custom_return_attributes is not None else '...payload_data_fragment'}
         }}
     }}
-    {graphql_queries.payload_data_fragment}
+    {graphql_queries.payload_data_fragment if custom_return_attributes is None else ''}
     """
     payloads = await mythic_utilities.graphql_post(mythic=mythic, query=payload_query)
     return payloads["payload"]
@@ -1009,7 +1009,7 @@ async def get_payload_by_uuid(
             {custom_return_attributes if custom_return_attributes is not None else '...payload_data_fragment'}
         }}
     }}
-    {graphql_queries.payload_data_fragment}
+    {graphql_queries.payload_data_fragment if custom_return_attributes is None else ''}
     """
     payloads = await mythic_utilities.graphql_post(
         mythic=mythic, query=payload_query, variables={"payload_uuid": payload_uuid}
@@ -1105,7 +1105,7 @@ async def get_all_task_output(
             {custom_return_attributes if custom_return_attributes is not None else '...task_output_fragment'}
         }}
     }}
-    {graphql_queries.task_output_fragment}
+    {graphql_queries.task_output_fragment if custom_return_attributes is None else ''}
     """
     initial = await mythic_utilities.graphql_post(
         mythic=mythic, query=query, variables=None
@@ -1133,7 +1133,7 @@ async def subscribe_new_task_output(
             {custom_return_attributes if custom_return_attributes is not None else '...task_output_fragment'}
         }}
     }}
-    {graphql_queries.task_output_fragment}
+    {graphql_queries.task_output_fragment if custom_return_attributes is None else ''}
     """
     seen_files = set()
     try:
@@ -1272,7 +1272,7 @@ async def get_all_downloaded_files(
             {custom_return_attributes if custom_return_attributes is not None else '...file_data_fragment'}
         }}
     }}
-    {graphql_queries.file_data_fragment}
+    {graphql_queries.file_data_fragment if custom_return_attributes is None else ''}
     """
     downloaded_files = await mythic_utilities.graphql_post(
         mythic=mythic, query=file_query
@@ -1295,7 +1295,7 @@ async def get_all_screenshots(
             {custom_return_attributes if custom_return_attributes is not None else '...file_data_fragment'}
         }}
     }}
-    {graphql_queries.file_data_fragment}
+    {graphql_queries.file_data_fragment if custom_return_attributes is None else ''}
     """
     downloaded_files = await mythic_utilities.graphql_post(
         mythic=mythic, query=file_query
@@ -1318,7 +1318,7 @@ async def get_all_uploaded_files(
             {custom_return_attributes if custom_return_attributes is not None else '...file_data_fragment'}
         }}
     }}
-    {graphql_queries.file_data_fragment}
+    {graphql_queries.file_data_fragment if custom_return_attributes is None else ''}
     """
     downloaded_files = await mythic_utilities.graphql_post(
         mythic=mythic, query=file_query
@@ -1366,7 +1366,7 @@ async def search_files(
              {custom_return_attributes if custom_return_attributes is not None else '...file_data_fragment'}
         }}
     }}
-    {graphql_queries.file_data_fragment}
+    {graphql_queries.file_data_fragment if custom_return_attributes is None else ''}
     """
     search_comment = f"%{comment}%" if comment != "" else "%%"
     search_filename = f"%{filename}%" if filename != "" else "%%"
@@ -1398,7 +1398,7 @@ async def get_operations(
              {custom_return_attributes if custom_return_attributes is not None else '...get_operations_fragment'}
         }}
     }}
-    {graphql_queries.get_operations_fragment}
+    {graphql_queries.get_operations_fragment if custom_return_attributes is None else ''}
     """
     operations = await mythic_utilities.graphql_post(
         mythic=mythic,
@@ -1422,7 +1422,7 @@ async def create_operation(
             {custom_return_attributes if custom_return_attributes is not None else '...create_operation_fragment'}
         }}
     }}
-    {graphql_queries.create_operation_fragment}
+    {graphql_queries.create_operation_fragment if custom_return_attributes is None else ''}
     """
     created_operation = await mythic_utilities.graphql_post(
         mythic=mythic,
@@ -1470,7 +1470,7 @@ async def add_operator_to_operation(
             }}
         }}
     }}
-    {graphql_queries.add_operator_to_operation_fragment}
+    {graphql_queries.add_operator_to_operation_fragment if custom_return_attributes is None else ''}
     """
     variables = {
         "operators": {
@@ -1520,7 +1520,7 @@ async def remove_operator_from_operation(
             }}
         }}
     }}
-    {graphql_queries.remove_operator_from_operation_fragment}
+    {graphql_queries.remove_operator_from_operation_fragment if custom_return_attributes is None else ''}
     """
     variables = {
         "operatoroperation_ids": [
@@ -1567,7 +1567,7 @@ async def update_operator_in_operation(
             {custom_return_attributes if custom_return_attributes is not None else '...update_operator_in_operation_fragment'}
         }}
     }}
-    {graphql_queries.update_operator_in_operation_fragment}
+    {graphql_queries.update_operator_in_operation_fragment if custom_return_attributes is None else ''}
     """
     variables = {
         "operatoroperation_id": operator_and_operation["operation"][0][
@@ -1720,7 +1720,7 @@ async def get_latest_processes_on_host(
             
         }}
     }}
-    {graphql_queries.process_data_fragment}
+    {graphql_queries.process_data_fragment if custom_return_attributes is None else ''}
     """
     process_data = await mythic_utilities.graphql_post(
         mythic=mythic, query=process_query, variables={"host": host.upper()}

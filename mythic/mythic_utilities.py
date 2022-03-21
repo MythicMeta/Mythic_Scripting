@@ -97,11 +97,20 @@ async def http_post_form(
         raise e
 
 
-async def http_get(mythic: mythic_classes.Mythic, url: str) -> dict:
+async def http_get_dictionary(mythic: mythic_classes.Mythic, url: str) -> dict:
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=get_headers(mythic), ssl=False) as resp:
                 return await resp.json()
+    except Exception as e:
+        raise e
+
+
+async def http_get(mythic: mythic_classes.Mythic, url: str) -> bytes:
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=get_headers(mythic), ssl=False) as resp:
+                return await resp.content.read()
     except Exception as e:
         raise e
 

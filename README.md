@@ -20,7 +20,9 @@ Version 0.0.20 of the `mythic` package supports version 2.2.6 of the Mythic proj
 
 Version 0.0.21-25 of the `mythic` package supports version 2.2.8+ of the Mythic project (reports as version "3").
 
-Version 0.0.26 of the `mythic` package supports version 2.3+ of the Mythic project (reports as version "3"). This version uses the new GraphQL interfaces.
+Version 0.0.26 of the `mythic` package supports version 2.3+ of the Mythic project (reports as version "3").
+
+Version 0.0.27-rc1 of the `mythic` package supports version 2.3+ of the Mythic project utilizing the new GraphQL endpoints and reports as version "3".
 
 
 ```
@@ -42,7 +44,8 @@ In addition to thte old RESTful interfaces and websockets, this version includes
 
 ```
 import asyncio
-import logging
+from time import time
+
 from mythic import mythic, mythic_classes
 
 
@@ -50,25 +53,9 @@ async def main():
     mythic_instance = await mythic.login(
         username="mythic_admin",
         password="mythic_password",
-        server_ip="127.0.0.1",
+        server_ip="192.168.53.139",
         server_port=7443,
-        logging_level=logging.WARNING,
     )
-    print(mythic_instance)
-        # ################ Execute custom GraphQL Query ################
-    custom_query = """
-    query GetAPITokens($id: Int!) {
-        apitokens(where: {id: {_eq: $id}}) {
-            token_value
-            active
-            id
-        }
-    }
-    """
-    result = await mythic.execute_custom_query(
-        mythic=mythic_instance, query=custom_query, variables={"id": 30}
-    )
-    print(result)
 
     # ################ Registering a file with Mythic for use in Tasking ################
 
@@ -225,8 +212,47 @@ async def main():
     except Exception as e:
         print(f"Got exception removing user from operation: {e}") """
 
-    while True:
-        await asyncio.sleep(1)
+    # ################ Get all Payloads #############
+    """payloads = await mythic.get_all_payloads(mythic=mythic_instance)
+    print(payloads)"""
+
+    # ############### Download a Payload ############
+    """payload_bytes = await mythic.download_payload(
+        mythic=mythic_instance, payload_uuid="04467b89-dc46-42d1-b7c4-03aca84b194c"
+    )
+    print(payload_bytes)"""
+
+    # ############## Update a callback #############
+    """await mythic.update_callback(
+        mythic=mythic_instance,
+        description="test set",
+        locked=True,
+        callback_id=156,
+        active=False,
+    )"""
+
+    # ########### Get latest Processes #######
+    """processes = await mythic.get_latest_processes_on_host(
+        mythic=mythic_instance, host="SPOOKY.LOCAL"
+    )
+    print(processes)"""
+
+    # ########## Search Files and Add Comments ###########
+    """ files = await mythic.search_files(mythic=mythic_instance, filename="apfe")
+    for f in files:
+        print(f["filename_text"])
+        await mythic.update_file_comment(
+            mythic=mythic_instance, file_uuid=f["agent_file_id"], comment="auto updated"
+        ) """
+
+    # ########## Get Compromised Hosts, Users, IP Addresses ###########
+    hosts = await mythic.get_unique_compromised_hosts(mythic=mythic_instance)
+    print(hosts)
+    users = await mythic.get_unique_compromised_accounts(mythic=mythic_instance)
+    print(users)
+    ips = await mythic.get_unique_compromised_ips(mythic=mythic_instance)
+    print(ips)
+
 
 async def new_callbacks(mythic_instance: mythic_classes.Mythic):
     async for callback in mythic.subscribe_new_callbacks(mythic=mythic_instance):
@@ -256,6 +282,7 @@ async def all_filebrowser(mythic_instance: mythic_classes.Mythic):
 
 
 asyncio.run(main())
+
 ```
 
 # Information

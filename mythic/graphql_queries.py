@@ -35,6 +35,46 @@ create_task = gql(
     }
 """
 )
+update_callback_active_status = gql(
+    """
+    mutation updateActiveCallback ($callback_id: Int!, $active: Boolean!){
+        updateCallback(input: {callback_id: $callback_id, active: $active}) {
+            status
+            error
+        }
+    }
+    """
+)
+update_callback_lock_status = gql(
+    """
+    mutation lockCallack($callback_id: Int!, $locked: Boolean!){
+        updateCallback(input: {callback_id: $callback_id, locked: $locked}) {
+            status
+            error
+        }
+    }
+    """
+)
+update_callback_description = gql(
+    """
+    mutation updateDescriptionCallack($callback_id: Int!, $description: String!){
+        updateCallback(input: {callback_id: $callback_id, description: $description}) {
+            status
+            error
+        }
+    }
+    """
+)
+update_callback_sleep_info = gql(
+    """
+    mutation updateSleepInfoCallback($callback_id: Int!, $sleep_info: String!){
+        update_callback_by_pk(pk_columns: {id: $callback_id}, _set: {sleep_info: $sleep_info}){
+            id
+            sleep_info
+        }
+    }
+    """
+)
 task_fragment = """
     fragment task_fragment on task {
         callback_id
@@ -212,4 +252,95 @@ user_output_fragment = """
         response_text
         timestamp
     }
+"""
+task_output_fragment = """
+    fragment task_output_fragment on response {
+        id
+        timestamp
+        response_text
+        task {
+            id
+            agent_task_id
+        }
+    }
+"""
+payload_data_fragment = """
+fragment payload_data_fragment on payload {
+  build_message
+  build_phase
+  build_stderr
+  callback_alert
+  creation_time
+  id
+  operator {
+    id
+    username
+  }
+  uuid
+  tag
+  deleted
+  auto_generated
+  payloadtype {
+    id
+    ptype
+  }
+  filemetum {
+    agent_file_id
+    filename_text
+    id
+  }
+  payloadc2profiles {
+    c2profile {
+      running
+      name
+      is_p2p
+      container_running
+    }
+  }
+}
+"""
+process_data_fragment = """
+fragment process_data_fragment on process {
+    name
+    process_id
+    parent_process_id
+    architecture
+    bin_path
+    integrity_level
+    id
+    user
+}
+"""
+file_data_fragment = """
+fragment file_data_fragment on filemeta{
+    agent_file_id
+    chunk_size
+    chunks_received
+    complete
+    deleted
+    filename_text
+    full_remote_path_text
+    host
+    id
+    is_download_from_agent
+    is_payload
+    is_screenshot
+    md5
+    operator {
+        id
+        username
+    }
+    comment
+    sha1
+    timestamp
+    total_chunks
+    task {
+        id
+        comment
+        command {
+            cmd
+            id
+        }
+    }
+}
 """

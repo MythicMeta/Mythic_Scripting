@@ -282,7 +282,22 @@ async def all_filebrowser(mythic_instance: mythic_classes.Mythic):
 
 
 asyncio.run(main())
+```
 
+### Custom Attributes
+To supply your own custom attributes to many of the functions, you need to have each one on their own line like follows:
+```
+custom_attributes = """
+host
+user
+payload {
+    id
+    uuid
+}
+"""
+results = await mythic.get_all_callbacks(
+    mythic=mythic_instance, custom_return_attributes=custom_attributes
+)
 ```
 
 # Information

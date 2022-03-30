@@ -519,6 +519,35 @@ async def subscribe_all_tasks(
         yield t
 
 
+async def subscribe_all_tasks_and_updates(
+    mythic: mythic_classes.Mythic,
+    timeout: int = None,
+    callback_id: int = None,
+    custom_return_attributes: str = None,
+) -> AsyncGenerator:
+    """
+    Executes a graphql query to get information about every task submitted so far, then opens up a subscription for new tasks and updates to all tasks.
+    This returns an async iterator, which can be used as:
+        async for item in subscribe_all_tasks_and_updates(...data):
+            print(item) <--- item will always be a dictionary based on the data you're getting back
+    The default set of attributes returned in the dictionary can be found at graphql_queries.task_fragment.
+    If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `id` and `timestamp` fields, everything else is optional.
+    """
+    for t in await get_all_tasks(
+        mythic=mythic,
+        custom_return_attributes=custom_return_attributes,
+        callback_id=callback_id,
+    ):
+        yield t
+    async for t in subscribe_new_tasks_and_updates(
+        mythic=mythic,
+        timeout=timeout,
+        custom_return_attributes=custom_return_attributes,
+        callback_id=callback_id,
+    ):
+        yield t
+
+
 async def add_mitre_attack_to_task(
     mythic: mythic_classes.Mythic, task_id: int, mitre_attack_numbers: List[str]
 ) -> bool:

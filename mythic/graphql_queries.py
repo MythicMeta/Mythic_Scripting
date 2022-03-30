@@ -159,7 +159,7 @@ create_payload = gql(
     """
 )
 create_operator_fragment = """
-    fragment create_operator_fragment on createOperator {
+    fragment create_operator_fragment on OperatorOutput {
         active
         creation_time
         deleted

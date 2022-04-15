@@ -1122,15 +1122,12 @@ async def get_all_task_output(
 ) -> List[dict]:
     """
     Execute a query to get all current responses.
-    This returns an async iterator, which can be used as:
-        async for item in get_all_task_output(...data):
-            print(item) <--- item will always be a dictionary based on the data you're getting back
     The default set of attributes returned in the dictionary can be found at graphql_queries.task_output_fragment.
     If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `id` and `timestamp` fields, everything else is optional.
     """
     query = f"""
     query AllTaskResponses{{
-        response(order_by: {{id: asc}} {{
+        response(order_by: {{id: asc}}) {{
             {custom_return_attributes if custom_return_attributes is not None else '...task_output_fragment'}
         }}
     }}
@@ -1138,6 +1135,28 @@ async def get_all_task_output(
     """
     initial = await mythic_utilities.graphql_post(
         mythic=mythic, query=query, variables=None
+    )
+    return initial["response"]
+
+
+async def get_all_task_output_by_id(
+    mythic: mythic_classes.Mythic, task_id: int, custom_return_attributes: str = None
+) -> List[dict]:
+    """
+    Execute a query to get all responses for a given task.
+    The default set of attributes returned in the dictionary can be found at graphql_queries.task_output_fragment.
+    If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `id` and `timestamp` fields, everything else is optional.
+    """
+    query = f"""
+    query AllTaskResponses($task_id: Int!){{
+        response(order_by: {{id: asc}}, where: {{task_id: {{_eq: $task_id}}}}) {{
+            {custom_return_attributes if custom_return_attributes is not None else '...task_output_fragment'}
+        }}
+    }}
+    {graphql_queries.task_output_fragment if custom_return_attributes is None else ''}
+    """
+    initial = await mythic_utilities.graphql_post(
+        mythic=mythic, query=query, variables={"task_id": task_id}
     )
     return initial["response"]
 

@@ -234,7 +234,7 @@ update_operator_in_operation_fragment = """
     }
 """
 create_operation_fragment = """
-    fragment create_operation_fragment on createOperation {
+    fragment create_operation_fragment on createOperationOutput {
         status
         error
         operation{

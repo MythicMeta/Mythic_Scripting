@@ -1796,7 +1796,7 @@ async def get_unique_compromised_hosts(
         unique_results.add(r["host"])
     for r in results["payloadonhost"]:
         unique_results.add(r["host"])
-    unique_results.remove("")
+    unique_results.discard("")
     return list(unique_results)
 
 
@@ -1850,5 +1850,5 @@ async def get_unique_compromised_ips(
     for r in results["callback"]:
         unique_results.add(r["ip"])
         unique_results.add(r["external_ip"])
-    unique_results.remove("")
+    unique_results.discard("")
     return list(unique_results)

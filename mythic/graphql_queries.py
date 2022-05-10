@@ -344,3 +344,10 @@ fragment file_data_fragment on filemeta{
     }
 }
 """
+command_fragment = """
+fragment command_fragment on command {
+    id
+    cmd
+    attributes
+}
+"""

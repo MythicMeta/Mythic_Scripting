@@ -2148,22 +2148,24 @@ class Mythic:
                         if p.ptype == payload.payload_type.ptype:
                             payload.payload_type = p
                     except Exception as e:
-                        print("[-] Error trying to get payload type list")
+                        print(f"[-] Error trying to get payload type list: {e}")
                         await json_print(resp.response)
                         return resp
             resp = await self.get_payloadtype_commands(payload.payload_type)
             # now iterate over the commands and make sure to not include script_only or wrong supported_os fields
             commands = []
+            if isinstance(resp.response, str):
+                raise Exception("Failed to get available commands")
             for c in resp.response:
-                if not c.script_only:
-                    try:
-                        attributes = json.loads(c.attributes)
-                        if len(attributes["supported_os"]) == 0:
-                            commands.append(c)
-                        elif data["selected_os"] in attributes["supported_os"]:
-                            commands.append(c)
-                    except Exception as e:
+                try:
+                    attributes = c.attributes
+                    if len(attributes["supported_os"]) == 0:
                         commands.append(c)
+                    elif data["selected_os"] in attributes["supported_os"]:
+                        commands.append(c)
+                except Exception as e:
+                    print(f"[-] Error trying to parse command information: {e}")
+                    pass
             payload.commands = [c for c in commands if c.cmd not in exclude_commands]
         if payload.commands is not None:
             data["commands"] = [c.cmd for c in payload.commands]

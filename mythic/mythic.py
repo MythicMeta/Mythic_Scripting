@@ -753,9 +753,6 @@ async def get_all_filebrowser_data(
 ) -> List[dict]:
     """
     Executes a graphql query to get information about all current filebrowser data.
-    This returns an async iterator, which can be used as:
-        async for item in get_all_filebrowser_data(...data):
-            print(item) <--- item will always be a dictionary based on the data you're getting back
     The default set of attributes returned in the dictionary can be found at graphql_queries.filebrowser_fragment.
     If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `id` and `timestamp` fields, everything else is optional.
     """
@@ -841,6 +838,33 @@ async def subscribe_all_filebrowser(
         yield t
 
 
+# ######### Command Functions ##############
+
+
+async def get_all_commands_for_payloadtype(
+    mythic: mythic_classes.Mythic,
+    payload_type_name: str,
+    custom_return_attributes: str = None,
+) -> List:
+    """
+    Executes a graphql query to get information about all current commands for a payload type.
+    The default set of attributes returned in the dictionary can be found at graphql_queries.commands_fragment.
+    If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `attributes` and `cmd` fields, everything else is optional.
+    """
+    query = f"""
+    query CurrentCommands($payload_type_name: String!){{
+        command(where: {{payloadtype: {{ptype: {{_eq: $payload_type_name}}}}, deleted: {{_eq: false}}}}){{
+            {custom_return_attributes if custom_return_attributes is not None else '...command_fragment'}
+        }}
+    }}
+    {graphql_queries.command_fragment if custom_return_attributes is None else ''}
+    """
+    initial_commands = await mythic_utilities.graphql_post(
+        mythic=mythic, query=query, variables={"payload_type_name": payload_type_name}
+    )
+    return initial_commands["command"]
+
+
 # ######### Payload Functions ##############
 
 
@@ -856,6 +880,7 @@ async def create_payload(
     return_on_complete: bool = True,
     timeout: int = None,
     custom_return_attributes: str = None,
+    include_all_commands: bool = False,
 ) -> dict:
     """
     This tasks Mythic to create a new payload based on the supplied parameters. If `return_on_complete` is false, then this will return immediately after issuing the task to Mythic.
@@ -902,7 +927,43 @@ async def create_payload(
                 raise Exception(
                     "Build Parameters instance must be an array of dictionaries where each dictionary simply has a 'name' and 'value' key"
                 )
-    create_payload_dict["build_parameters"] = build_parameters
+        create_payload_dict["build_parameters"] = build_parameters
+    else:
+        create_payload_dict["build_parameters"] = []
+
+    if include_all_commands:
+        create_payload_dict["commands"] = []
+        initial_commands = await get_all_commands_for_payloadtype(
+            mythic=mythic, payload_type_name=payload_type_name
+        )
+        for c in initial_commands:
+            try:
+                attributes = json.loads(c["attributes"])
+                passes_all_restrictions = True
+                if "filter_by_build_parameter" in attributes:
+                    # check if the command is allowed by build parameter restrictions
+                    for build_param in create_payload_dict["build_parameters"]:
+                        if (
+                            build_param["name"] in attributes["filter_by_build_parameter"]
+                            and attributes["filter_by_build_parameter"]
+                            != build_param["value"]
+                        ):
+                            passes_all_restrictions = False
+                if "load_only" in attributes and attributes["load_only"]:
+                    passes_all_restrictions = False
+                # check if the command is allowed by supported_os
+                if (
+                    len(attributes["supported_os"]) != 0
+                    and operating_system not in attributes["supported_os"]
+                ):
+                    passes_all_restrictions = False
+                if passes_all_restrictions or (
+                    "builtin" in attributes and attributes["builtin"]
+                ):
+                    create_payload_dict["commands"].append(c["cmd"])
+            except Exception as e:
+                print(f"[-] Error trying to parse command information: {e}")
+                pass
     payload = await mythic_utilities.graphql_post(
         mythic=mythic,
         gql_query=graphql_queries.create_payload,
@@ -1741,6 +1802,29 @@ async def update_operation(
                 "admin_id": operator["operator"][0]["id"],
             },
         )
+
+
+async def update_current_operation_for_user(
+    mythic: mythic_classes.Mythic, operator_id: int, operation_id: int
+):
+    """
+    Sets the specified operation as current for the specified user.
+    """
+    query = """
+    mutation updateCurrentOpertionMutation($operator_id: Int!, $operation_id: Int!) {
+        updateCurrentOperation(user_id: $operator_id, operation_id: $operation_id) {
+            status
+            error
+            operation_id
+        }
+    }
+    """
+    results = await mythic_utilities.graphql_post(
+        mythic=mythic,
+        query=query,
+        variables={"operator_id": operator_id, "operation_id": operation_id},
+    )
+    return results["updateCurrentOperation"]
 
 
 # ############ Process Functions ##############

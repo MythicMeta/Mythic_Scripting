@@ -190,7 +190,7 @@ async def get_all_active_callbacks(
     """
     query = f"""
     query CurrentCallbacks{{
-        callback(where: {{active: {{_eq: true}}, order_by: {{id: asc}}){{
+        callback(where: {{active: {{_eq: true}}}}, order_by: {{id: asc}}){{
             {custom_return_attributes if custom_return_attributes is not None else '...callback_fragment'}
         }}
     }}

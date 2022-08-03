@@ -140,7 +140,7 @@ async def subscribe_custom_query(
     """
     try:
         async for result in mythic_utilities.graphql_subscription(
-            mythic=mythic, data=query, variables=variables, timeout=timeout
+            mythic=mythic, query=query, variables=variables, timeout=timeout
         ):
             yield result
     except Exception as e:

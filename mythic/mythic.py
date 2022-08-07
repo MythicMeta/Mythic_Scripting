@@ -2,7 +2,7 @@ import base64
 import json
 import logging
 from datetime import datetime
-from typing import AsyncGenerator, List, Union
+from typing import AsyncGenerator, AsyncIterator, List, Union
 
 import aiohttp
 
@@ -1362,6 +1362,19 @@ async def download_file(mythic: mythic_classes.Mythic, file_uuid: str) -> bytes:
     try:
         response = await mythic_utilities.http_get(mythic=mythic, url=url)
         return response
+    except Exception as e:
+        raise e
+
+
+async def download_file_chunked(
+    mythic: mythic_classes.Mythic, file_uuid: str, chunk_size: int = 512000
+) -> AsyncGenerator:
+    url = f"{mythic.http}{mythic.server_ip}:{mythic.server_port}/direct/download/{file_uuid}"
+    try:
+        async for t in mythic_utilities.http_get_chunked(
+            mythic=mythic, url=url, chunk_size=chunk_size
+        ):
+            yield t
     except Exception as e:
         raise e
 

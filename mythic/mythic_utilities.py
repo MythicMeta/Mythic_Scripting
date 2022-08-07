@@ -115,6 +115,18 @@ async def http_get(mythic: mythic_classes.Mythic, url: str) -> bytes:
         raise e
 
 
+async def http_get_chunked(
+    mythic: mythic_classes.Mythic, url: str, chunk_size: int = 512000
+) -> AsyncGenerator:
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=get_headers(mythic), ssl=False) as resp:
+                async for data in resp.content.iter_chunked(abs(chunk_size)):
+                    yield data
+    except Exception as e:
+        raise e
+
+
 async def graphql_post(
     mythic: mythic_classes.Mythic,
     gql_query: gql = None,

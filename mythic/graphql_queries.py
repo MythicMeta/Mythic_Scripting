@@ -27,62 +27,39 @@ get_apitokens = gql(
 create_task = gql(
     """
     mutation createTasking($callback_id: Int!, $command: String!, $params: String!, $token_id: Int, $tasking_location: String, $original_params: String, $parameter_group_name: String) {
-        createTask(callback_id: $callback_id, command: $command, params: $params, token: $token_id, tasking_location: $tasking_location, original_params: $original_params, parameter_group_name: $parameter_group_name) {
+        createTask(callback_id: $callback_id, command: $command, params: $params, token_id: $token_id, tasking_location: $tasking_location, original_params: $original_params, parameter_group_name: $parameter_group_name) {
             status
             id
+            display_id
             error
         }
     }
 """
 )
-update_callback_active_status = gql(
+update_callback = gql(
     """
-    mutation updateActiveCallback ($callback_id: Int!, $active: Boolean!){
-        updateCallback(input: {callback_id: $callback_id, active: $active}) {
+    mutation updateCallbackInformation ($callback_display_id: Int!, $active: Boolean, $locked: Boolean, $description: String, $ips: [String], $user: String, $host: String, $os: String, $architecture: String, $extra_info: String, $sleep_info: String, $pid: Int, $process_name: String, $integrity_level: Int, $domain: String){
+        updateCallback(input: {callback_display_id: $callback_display_id, active: $active, locked: $locked, description: $description, ips: $ips, user: $user, host: $host, os: $os, architecture: $architecture, extra_info: $extra_info, sleep_info: $sleep_info, pid: $pid, process_name: $process_name, integrity_level: $integrity_level, domain: $domain}) {
             status
             error
         }
     }
     """
 )
-update_callback_lock_status = gql(
-    """
-    mutation lockCallack($callback_id: Int!, $locked: Boolean!){
-        updateCallback(input: {callback_id: $callback_id, locked: $locked}) {
-            status
-            error
-        }
-    }
-    """
-)
-update_callback_description = gql(
-    """
-    mutation updateDescriptionCallack($callback_id: Int!, $description: String!){
-        updateCallback(input: {callback_id: $callback_id, description: $description}) {
-            status
-            error
-        }
-    }
-    """
-)
-update_callback_sleep_info = gql(
-    """
-    mutation updateSleepInfoCallback($callback_id: Int!, $sleep_info: String!){
-        update_callback_by_pk(pk_columns: {id: $callback_id}, _set: {sleep_info: $sleep_info}){
-            id
-            sleep_info
-        }
-    }
-    """
-)
+
 task_fragment = """
     fragment task_fragment on task {
-        callback_id
+        callback {
+            id
+            display_id
+        }
         id
+        display_id
         operator{
             username
         }
         status
+        completed
         original_params
         display_params
         timestamp
@@ -91,22 +68,25 @@ task_fragment = """
             id
         }
         token {
-            id
+            token_id
         }
     }
     """
-filebrowser_fragment = """
-    fragment filebrowser_fragment on filebrowserobj {
-        comment
-        full_path_text
+mythictree_fragment = """
+    fragment mythictree_fragment on mythictree {
+        task_id
+        timestamp
         host
-        id
-        is_file
-        modify_time
+        comment
+        success
+        deleted
+        tree_type
+        os
+        can_have_children
         name_text
         parent_path_text
-        permissions
-        timestamp
+        full_path_text
+        metadata
     }
 """
 callback_fragment = """
@@ -117,6 +97,7 @@ callback_fragment = """
         external_ip
         host
         id
+        display_id
         integrity_level
         ip
         extra_info
@@ -130,9 +111,9 @@ callback_fragment = """
         payload {
             os
             payloadtype {
-                ptype
+                name
             }
-            tag
+            description
             uuid
         }
     }
@@ -217,20 +198,21 @@ get_operation_and_operator_by_name = gql(
     """
 )
 add_operator_to_operation_fragment = """
-    fragment add_operator_to_operation_fragment on operatoroperation{
-        id
-        view_mode
+    fragment add_operator_to_operation_fragment on updateOperatorOperation{
+        status
+        error
     }
 """
 remove_operator_from_operation_fragment = """
-    fragment remove_operator_from_operation_fragment on operatoroperation{
-        id
+    fragment remove_operator_from_operation_fragment on updateOperatorOperation{
+        status
+        error
     }
 """
 update_operator_in_operation_fragment = """
-    fragment update_operator_in_operation_fragment on operatoroperation{
-        id
-        view_mode
+    fragment update_operator_in_operation_fragment on updateOperatorOperation{
+        status
+        error
     }
 """
 create_operation_fragment = """
@@ -260,7 +242,11 @@ task_output_fragment = """
         response_text
         task {
             id
+            display_id
+            status
+            completed
             agent_task_id
+            command_name
         }
     }
 """
@@ -277,16 +263,16 @@ fragment payload_data_fragment on payload {
     username
   }
   uuid
-  tag
+  description
   deleted
   auto_generated
   payloadtype {
     id
-    ptype
+    name
   }
   filemetum {
     agent_file_id
-    filename_text
+    filename_utf8
     id
   }
   payloadc2profiles {
@@ -299,18 +285,6 @@ fragment payload_data_fragment on payload {
   }
 }
 """
-process_data_fragment = """
-fragment process_data_fragment on process {
-    name
-    process_id
-    parent_process_id
-    architecture
-    bin_path
-    integrity_level
-    id
-    user
-}
-"""
 file_data_fragment = """
 fragment file_data_fragment on filemeta{
     agent_file_id
@@ -318,8 +292,8 @@ fragment file_data_fragment on filemeta{
     chunks_received
     complete
     deleted
-    filename_text
-    full_remote_path_text
+    filename_utf8
+    full_remote_path_utf8
     host
     id
     is_download_from_agent

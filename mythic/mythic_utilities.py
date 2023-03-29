@@ -21,6 +21,7 @@ async def timeout_generator(
 ) -> AsyncGenerator[T, None]:
     start = time()
     should_timeout = timeout is not None and timeout > 0
+    task = None
     while True:
         # we don't want to wait for timeout each time, that's an overall timeout
         if should_timeout:
@@ -36,7 +37,8 @@ async def timeout_generator(
             yield await asyncio.wait_for(task, new_timeout)
         except asyncio.TimeoutError:
             logging.info("Timeout reached in timeout_generator")
-            task.cancel()
+            if task is not None:
+                task.cancel()
             return
         except StopAsyncIteration:
             return

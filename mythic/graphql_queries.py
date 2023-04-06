@@ -89,6 +89,17 @@ mythictree_fragment = """
         metadata
     }
 """
+operator_fragment = """
+    fragment operator_fragment on operator {
+        id
+        username
+        admin
+        active
+        last_login
+        current_operation_id
+        deleted
+    }
+"""
 callback_fragment = """
     fragment callback_fragment on callback {
         architecture

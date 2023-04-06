@@ -589,7 +589,6 @@ async def waitfor_task_complete(
     async for result in mythic_utilities.graphql_subscription(
         mythic=mythic, query=subscription, variables=variables, timeout=timeout
     ):
-        print(result)
         if len(result["task_stream"]) != 1:
             raise Exception("task not found")
         if "error" in result["task_stream"][0]["status"] or result["task_stream"][0]["completed"]:
@@ -1330,6 +1329,38 @@ async def set_password(mythic: mythic_classes.Mythic, username: str, new_passwor
     )
     return response["updatePassword"]
 
+
+async def get_operator(mythic: mythic_classes.Mythic, username: str, custom_return_attributes: str = None) -> dict:
+    resp = await execute_custom_query(
+        mythic=mythic,
+        query=f"""
+        query getUserID($username: String!) {{
+            operator(where: {{username: {{_eq: $username}}}}){{
+                {custom_return_attributes if custom_return_attributes is not None else '...operator_fragment'}
+            }}
+        }}
+        {graphql_queries.operator_fragment if custom_return_attributes is None else ''}
+        """,
+        variables={"username": username}
+    )
+    return resp
+
+
+async def get_me(mythic: mythic_classes.Mythic) -> dict:
+    resp = await execute_custom_query(
+        mythic=mythic,
+        query=f"""
+        query getMe {{
+            meHook{{
+                status
+                error
+                current_operation_id
+                current_operation
+            }}
+        }}
+        """,
+    )
+    return resp
 
 # ########## File Functions ##############
 

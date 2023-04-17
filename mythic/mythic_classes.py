@@ -12,7 +12,6 @@ class Mythic:
         server_ip: str = None,
         ssl: bool = False,
         server_port: int = None,
-        server_api_version: float = 1.4,
         global_timeout: int = None,
         schema: str = None,
     ):
@@ -23,15 +22,12 @@ class Mythic:
         self.refresh_token = refresh_token
         self.server_ip = server_ip
         self.server_port = server_port
-        self.server_api_version = server_api_version
         self.ssl = ssl
         self.http = "http://" if not ssl else "https://"
         self.ws = "ws://" if not ssl else "wss://"
         self.global_timeout = global_timeout if global_timeout is not None else -1
-        self.scripting_version = "0.1.0rc3"
+        self.scripting_version = "0.1.0rc5"
         self.current_operation_id = 0
-        self.operator_id = None
-        self.operator = None
         self.schema = schema
 
     def __str__(self):
@@ -46,8 +42,6 @@ class Mythic:
                 "server_port": self.server_port,
                 "ssl": self.ssl,
                 "current_operation_id": self.current_operation_id,
-                "operator": self.operator,
-                "operator_id": self.operator_id,
             },
             indent=4,
         )

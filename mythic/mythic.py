@@ -873,7 +873,7 @@ async def create_payload(
         )
         for c in initial_commands:
             try:
-                attributes = json.loads(c["attributes"])
+                attributes = c["attributes"]
                 passes_all_restrictions = True
                 if "filter_by_build_parameter" in attributes:
                     # check if the command is allowed by build parameter restrictions

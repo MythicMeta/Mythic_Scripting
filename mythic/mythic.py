@@ -478,8 +478,9 @@ async def subscribe_all_tasks_and_updates(
         timeout=timeout,
         custom_return_attributes=custom_return_attributes,
         callback_display_id=callback_display_id,
+        batch_size=1
     ):
-        yield t
+        yield t[0]
 
 
 async def add_mitre_attack_to_task(
@@ -2083,16 +2084,39 @@ async def get_unique_compromised_ips(
 async def send_event_log_message(
         mythic: mythic_classes.Mythic,
         message: str,
-        level: str = "info"
+        level: str = "info",
+        source: str = "",
 ) -> dict:
     query = """
-    mutation SendEventLog($message: String!, $level: String!){
-        insert_operationeventlog_one(object: {level: $level, message: $message}) {
-            id
+    mutation SendEventLog($message: String!, $level: String!, $source: String){
+        createOperationEventLog(level: $level, message: $message, source: $source) {
+            status
+            error
         }
     }
     """
-    return await mythic_utilities.graphql_post(mythic=mythic, query=query, variables={"level": level, "message": message})
+    return await mythic_utilities.graphql_post(mythic=mythic, query=query, variables={"level": level,
+                                                                                      "message": message,
+                                                                                      "source": source})
+
+
+# ####### webhook ############
+async def send_custom_webhook_message(
+        mythic: mythic_classes.Mythic,
+        webhook_data: dict,
+        webhook_type: str = "new_custom",
+) -> dict:
+    query = """
+    mutation sendMyExternalWebhook($webhook_type: String!, $webhook_data: jsonb!){
+        sendExternalWebhook(webhook_type: $webhook_type, webhook_data: $webhook_data) {
+            status
+            error
+        }
+    }
+    """
+
+    return await mythic_utilities.graphql_post(mythic=mythic, query=query, variables={"webhook_data": webhook_data,
+                                                                                      "webhook_type": webhook_type})
 
 # ####### Tag Functions ############
 

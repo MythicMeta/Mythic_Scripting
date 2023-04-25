@@ -22,14 +22,14 @@ NOTSET = 0
 
 
 async def login(
-    server_ip: str,
-    server_port: int = 7443,
-    username: str = None,
-    password: str = None,
-    apitoken: str = None,
-    ssl: bool = True,
-    timeout: int = -1,
-    logging_level: int = logging.WARNING,
+        server_ip: str,
+        server_port: int = 7443,
+        username: str = None,
+        password: str = None,
+        apitoken: str = None,
+        ssl: bool = True,
+        timeout: int = -1,
+        logging_level: int = logging.WARNING,
 ) -> mythic_classes.Mythic:
     """
     Create a new Mythic instance based on the connection information and attempt to validate the credentials.
@@ -79,8 +79,8 @@ async def login(
                     mythic=mythic, gql_query=graphql_queries.create_apitoken
                 )
                 if (
-                    new_token["createAPIToken"]["status"] == "success"
-                    and "token_value" in new_token["createAPIToken"]
+                        new_token["createAPIToken"]["status"] == "success"
+                        and "token_value" in new_token["createAPIToken"]
                 ):
                     mythic.apitoken = new_token["createAPIToken"]["token_value"]
                 else:
@@ -100,7 +100,7 @@ async def login(
 
 
 async def execute_custom_query(
-    mythic: mythic_classes.Mythic, query: str, variables: dict = None
+        mythic: mythic_classes.Mythic, query: str, variables: dict = None
 ) -> dict:
     try:
         return await mythic_utilities.graphql_post(
@@ -112,7 +112,7 @@ async def execute_custom_query(
 
 
 async def subscribe_custom_query(
-    mythic: mythic_classes.Mythic, query: str, variables: dict = None, timeout: int = None
+        mythic: mythic_classes.Mythic, query: str, variables: dict = None, timeout: int = None
 ) -> AsyncGenerator:
     """
     Execute a custom graphql subscription.
@@ -122,7 +122,7 @@ async def subscribe_custom_query(
     """
     try:
         async for result in mythic_utilities.graphql_subscription(
-            mythic=mythic, query=query, variables=variables, timeout=timeout
+                mythic=mythic, query=query, variables=variables, timeout=timeout
         ):
             yield result
     except Exception as e:
@@ -134,7 +134,7 @@ async def subscribe_custom_query(
 
 
 async def get_all_callbacks(
-    mythic: mythic_classes.Mythic, custom_return_attributes: str = None
+        mythic: mythic_classes.Mythic, custom_return_attributes: str = None
 ) -> List[dict]:
     """
     Executes a graphql query to get information about all callbacks (including ones that are no longer active).
@@ -156,8 +156,8 @@ async def get_all_callbacks(
 
 
 async def get_all_active_callbacks(
-    mythic: mythic_classes.Mythic,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        custom_return_attributes: str = None,
 ) -> List[dict]:
     """
     Executes a graphql query to get information about all currently active callbacks.
@@ -179,10 +179,10 @@ async def get_all_active_callbacks(
 
 
 async def subscribe_new_callbacks(
-    mythic: mythic_classes.Mythic,
-    batch_size: int = 50,
-    timeout: int = None,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        batch_size: int = 50,
+        timeout: int = None,
+        custom_return_attributes: str = None,
 ) -> AsyncGenerator:
     """
     Execute a graphql subscription for callbacks that have an initial checkin time greater than when this function is called.
@@ -203,7 +203,7 @@ async def subscribe_new_callbacks(
         """
         variables = {"now": str(datetime.utcnow()), "batch_size": batch_size}
         async for result in mythic_utilities.graphql_subscription(
-            mythic=mythic, query=subscription, variables=variables, timeout=timeout
+                mythic=mythic, query=subscription, variables=variables, timeout=timeout
         ):
             yield result["callback_stream"]
     except StopAsyncIteration:
@@ -215,9 +215,9 @@ async def subscribe_new_callbacks(
 
 
 async def subscribe_all_active_callbacks(
-    mythic: mythic_classes.Mythic,
-    timeout: int = None,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        timeout: int = None,
+        custom_return_attributes: str = None,
 ) -> AsyncGenerator:
     """
     Executes a graphql query to get information about all currently active callbacks so far, then opens up a subscription for new callbacks.
@@ -228,32 +228,32 @@ async def subscribe_all_active_callbacks(
     If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `id` field, everything else is optional.
     """
     for t in await get_all_active_callbacks(
-        mythic=mythic, custom_return_attributes=custom_return_attributes
+            mythic=mythic, custom_return_attributes=custom_return_attributes
     ):
         yield t
     async for t in subscribe_new_callbacks(
-        mythic=mythic, timeout=timeout, custom_return_attributes=custom_return_attributes, batch_size=1
+            mythic=mythic, timeout=timeout, custom_return_attributes=custom_return_attributes, batch_size=1
     ):
         yield t
 
 
 async def update_callback(
-    mythic: mythic_classes.Mythic,
-    callback_display_id: int,
-    active: bool = None,
-    sleep_info: str = None,
-    locked: bool = None,
-    description: str = None,
-    ips: list[str] = None,
-    user: str = None,
-    host: str = None,
-    os: str = None,
-    architecture: str = None,
-    extra_info: str = None,
-    pid: int = None,
-    process_name: str = None,
-    integrity_level: int = None,
-    domain: str = None
+        mythic: mythic_classes.Mythic,
+        callback_display_id: int,
+        active: bool = None,
+        sleep_info: str = None,
+        locked: bool = None,
+        description: str = None,
+        ips: list[str] = None,
+        user: str = None,
+        host: str = None,
+        os: str = None,
+        architecture: str = None,
+        extra_info: str = None,
+        pid: int = None,
+        process_name: str = None,
+        integrity_level: int = None,
+        domain: str = None
 ):
     update_status = await mythic_utilities.graphql_post(
         mythic=mythic,
@@ -283,9 +283,9 @@ async def update_callback(
 
 
 async def get_all_tasks(
-    mythic: mythic_classes.Mythic,
-    custom_return_attributes: str = None,
-    callback_display_id: int = None,
+        mythic: mythic_classes.Mythic,
+        custom_return_attributes: str = None,
+        callback_display_id: int = None,
 ) -> List[dict]:
     """
     Executes a graphql query to get all tasks submitted so far (potentially limited to a single callback).
@@ -319,11 +319,11 @@ async def get_all_tasks(
 
 
 async def subscribe_new_tasks(
-    mythic: mythic_classes.Mythic,
-    batch_size: int = 50,
-    timeout: int = None,
-    callback_display_id: int = None,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        batch_size: int = 50,
+        timeout: int = None,
+        callback_display_id: int = None,
+        custom_return_attributes: str = None,
 ) -> AsyncGenerator:
     """
     Execute a graphql subscription for tasks that have a timestamp greater than when this function is called.
@@ -364,7 +364,7 @@ async def subscribe_new_tasks(
                 "batch_size": batch_size,
             }
         async for result in mythic_utilities.graphql_subscription(
-            mythic=mythic, query=subscription, variables=variables, timeout=timeout
+                mythic=mythic, query=subscription, variables=variables, timeout=timeout
         ):
             yield result["task_stream"]
     except Exception as e:
@@ -372,11 +372,11 @@ async def subscribe_new_tasks(
 
 
 async def subscribe_new_tasks_and_updates(
-    mythic: mythic_classes.Mythic,
-    batch_size: int = 50,
-    timeout: int = None,
-    callback_display_id: int = None,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        batch_size: int = 50,
+        timeout: int = None,
+        callback_display_id: int = None,
+        custom_return_attributes: str = None,
 ) -> AsyncGenerator:
     """
     Execute a graphql subscription for tasks that have a timestamp greater than when this function is called.
@@ -425,10 +425,10 @@ async def subscribe_new_tasks_and_updates(
 
 
 async def subscribe_all_tasks(
-    mythic: mythic_classes.Mythic,
-    timeout: int = None,
-    callback_display_id: int = None,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        timeout: int = None,
+        callback_display_id: int = None,
+        custom_return_attributes: str = None,
 ) -> AsyncGenerator:
     """
     Executes a graphql query to get information about every task submitted so far, then opens up a subscription for new tasks.
@@ -439,25 +439,25 @@ async def subscribe_all_tasks(
     If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `id` and `timestamp` fields, everything else is optional.
     """
     for t in await get_all_tasks(
-        mythic=mythic,
-        custom_return_attributes=custom_return_attributes,
+            mythic=mythic,
+            custom_return_attributes=custom_return_attributes,
             callback_display_id=callback_display_id,
     ):
         yield t
     async for t in subscribe_new_tasks(
-        mythic=mythic,
-        timeout=timeout,
-        custom_return_attributes=custom_return_attributes,
+            mythic=mythic,
+            timeout=timeout,
+            custom_return_attributes=custom_return_attributes,
             callback_display_id=callback_display_id,
     ):
         yield t
 
 
 async def subscribe_all_tasks_and_updates(
-    mythic: mythic_classes.Mythic,
-    timeout: int = None,
-    callback_display_id: int = None,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        timeout: int = None,
+        callback_display_id: int = None,
+        custom_return_attributes: str = None,
 ) -> AsyncGenerator:
     """
     Executes a graphql query to get information about every task submitted so far, then opens up a subscription for new tasks and updates to all tasks.
@@ -468,23 +468,23 @@ async def subscribe_all_tasks_and_updates(
     If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `id` and `timestamp` fields, everything else is optional.
     """
     for t in await get_all_tasks(
-        mythic=mythic,
-        custom_return_attributes=custom_return_attributes,
-        callback_display_id=callback_display_id,
+            mythic=mythic,
+            custom_return_attributes=custom_return_attributes,
+            callback_display_id=callback_display_id,
     ):
         yield t
     async for t in subscribe_new_tasks_and_updates(
-        mythic=mythic,
-        timeout=timeout,
-        custom_return_attributes=custom_return_attributes,
-        callback_display_id=callback_display_id,
-        batch_size=1
+            mythic=mythic,
+            timeout=timeout,
+            custom_return_attributes=custom_return_attributes,
+            callback_display_id=callback_display_id,
+            batch_size=1
     ):
         yield t[0]
 
 
 async def add_mitre_attack_to_task(
-    mythic: mythic_classes.Mythic, task_display_id: int, mitre_attack_numbers: List[str]
+        mythic: mythic_classes.Mythic, task_display_id: int, mitre_attack_numbers: List[str]
 ) -> bool:
     """
     Adds the supplied MITRE ATT&CK techniques to the specified task.
@@ -518,14 +518,14 @@ async def add_mitre_attack_to_task(
 
 
 async def issue_task(
-    mythic: mythic_classes.Mythic,
-    command_name: str,
-    parameters: Union[str, dict],
-    callback_display_id: int,
-    token_id: int = None,
-    wait_for_complete: bool = False,
-    custom_return_attributes: str = None,
-    timeout: int = None,
+        mythic: mythic_classes.Mythic,
+        command_name: str,
+        parameters: Union[str, dict],
+        callback_display_id: int,
+        token_id: int = None,
+        wait_for_complete: bool = False,
+        custom_return_attributes: str = None,
+        timeout: int = None,
 ) -> dict:
     """
     Create a new task within Mythic for a specific callback.
@@ -569,10 +569,10 @@ async def issue_task(
 
 
 async def waitfor_task_complete(
-    mythic: mythic_classes.Mythic,
-    task_display_id: int,
-    custom_return_attributes: str = None,
-    timeout: int = None,
+        mythic: mythic_classes.Mythic,
+        task_display_id: int,
+        custom_return_attributes: str = None,
+        timeout: int = None,
 ) -> dict:
     """
     Execute a subscription to wait for a task to reach a certain status or timeout.
@@ -588,7 +588,7 @@ async def waitfor_task_complete(
     """
     variables = {"task_display_id": task_display_id}
     async for result in mythic_utilities.graphql_subscription(
-        mythic=mythic, query=subscription, variables=variables, timeout=timeout
+            mythic=mythic, query=subscription, variables=variables, timeout=timeout
     ):
         if len(result["task_stream"]) != 1:
             raise Exception("task not found")
@@ -597,9 +597,9 @@ async def waitfor_task_complete(
 
 
 async def issue_task_all_active_callbacks(
-    mythic: mythic_classes.Mythic,
-    command_name: str,
-    parameters: Union[str, dict],
+        mythic: mythic_classes.Mythic,
+        command_name: str,
+        parameters: Union[str, dict],
 ) -> List[dict]:
     """
     Create a new task within Mythic for all currently active callbacks.
@@ -647,12 +647,12 @@ async def issue_task_all_active_callbacks(
 
 
 async def issue_task_and_waitfor_task_output(
-    mythic: mythic_classes.Mythic,
-    command_name: str,
-    parameters: Union[str, dict],
-    callback_display_id: int,
-    token_id: int = None,
-    timeout: int = None,
+        mythic: mythic_classes.Mythic,
+        command_name: str,
+        parameters: Union[str, dict],
+        callback_display_id: int,
+        token_id: int = None,
+        timeout: int = None,
 ) -> bytes:
     task = await issue_task(
         mythic=mythic,
@@ -674,9 +674,9 @@ async def issue_task_and_waitfor_task_output(
 
 
 async def get_all_filebrowser(
-    mythic: mythic_classes.Mythic, custom_return_attributes: str = None,
-    host: str = None,
-    batch_size: int = 100,
+        mythic: mythic_classes.Mythic, custom_return_attributes: str = None,
+        host: str = None,
+        batch_size: int = 100,
 ) -> AsyncGenerator:
     """
     Executes a graphql query to get information about all current filebrowser data.
@@ -712,11 +712,11 @@ async def get_all_filebrowser(
 
 
 async def subscribe_new_filebrowser(
-    mythic: mythic_classes.Mythic,
-    host: str = None,
-    batch_size: int = 50,
-    timeout: int = None,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        host: str = None,
+        batch_size: int = 50,
+        timeout: int = None,
+        custom_return_attributes: str = None,
 ):
     """
     Executes a graphql query to get information about new filebrowser data since the function was called.
@@ -748,11 +748,11 @@ async def subscribe_new_filebrowser(
 
 
 async def subscribe_all_filebrowser(
-    mythic: mythic_classes.Mythic,
-    host: str = None,
-    timeout: int = None,
-    batch_size: int = 100,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        host: str = None,
+        timeout: int = None,
+        batch_size: int = 100,
+        custom_return_attributes: str = None,
 ):
     """
     Executes a graphql query to get information about all filebrowser data so far, then opens up a subscription for new filebrowser data.
@@ -763,13 +763,13 @@ async def subscribe_all_filebrowser(
     If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `id` and `timestamp` fields, everything else is optional.
     """
     async for t in get_all_filebrowser(
-        mythic=mythic, custom_return_attributes=custom_return_attributes,
-        host=host, batch_size=batch_size
+            mythic=mythic, custom_return_attributes=custom_return_attributes,
+            host=host, batch_size=batch_size
     ):
         yield t
     async for t in subscribe_new_filebrowser(
-        mythic=mythic, timeout=timeout, custom_return_attributes=custom_return_attributes,
-        host=host, batch_size=batch_size
+            mythic=mythic, timeout=timeout, custom_return_attributes=custom_return_attributes,
+            host=host, batch_size=batch_size
     ):
         yield t
 
@@ -778,9 +778,9 @@ async def subscribe_all_filebrowser(
 
 
 async def get_all_commands_for_payloadtype(
-    mythic: mythic_classes.Mythic,
-    payload_type_name: str,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        payload_type_name: str,
+        custom_return_attributes: str = None,
 ) -> List:
     """
     Executes a graphql query to get information about all current commands for a payload type.
@@ -805,18 +805,18 @@ async def get_all_commands_for_payloadtype(
 
 
 async def create_payload(
-    mythic: mythic_classes.Mythic,
-    payload_type_name: str,
-    filename: str,
-    operating_system: str,
-    c2_profiles: List[dict],
-    commands: List[str] = None,
-    build_parameters: List[dict] = None,
-    description: str = "",
-    return_on_complete: bool = True,
-    timeout: int = None,
-    custom_return_attributes: str = None,
-    include_all_commands: bool = False,
+        mythic: mythic_classes.Mythic,
+        payload_type_name: str,
+        filename: str,
+        operating_system: str,
+        c2_profiles: List[dict],
+        commands: List[str] = None,
+        build_parameters: List[dict] = None,
+        description: str = "",
+        return_on_complete: bool = True,
+        timeout: int = None,
+        custom_return_attributes: str = None,
+        include_all_commands: bool = False,
 ) -> dict:
     """
     This tasks Mythic to create a new payload based on the supplied parameters. If `return_on_complete` is false, then this will return immediately after issuing the task to Mythic.
@@ -851,7 +851,7 @@ async def create_payload(
                 "C2 Profile instance must have 'c2_profile` key with name of c2 profile"
             )
         if "c2_profile_parameters" not in c or not isinstance(
-            c["c2_profile_parameters"], dict
+                c["c2_profile_parameters"], dict
         ):
             raise Exception(
                 "C2 Profile instance must have a 'c2_profile_parameters' dictionary where the keys are the c2 profile parameter names and the values are what you want to specify"
@@ -880,21 +880,21 @@ async def create_payload(
                     # check if the command is allowed by build parameter restrictions
                     for build_param in create_payload_dict["build_parameters"]:
                         if (
-                            build_param["name"] in attributes["filter_by_build_parameter"]
-                            and attributes["filter_by_build_parameter"]
-                            != build_param["value"]
+                                build_param["name"] in attributes["filter_by_build_parameter"]
+                                and attributes["filter_by_build_parameter"]
+                                != build_param["value"]
                         ):
                             passes_all_restrictions = False
                 if "load_only" in attributes and attributes["load_only"]:
                     passes_all_restrictions = False
                 # check if the command is allowed by supported_os
                 if (
-                    len(attributes["supported_os"]) != 0
-                    and operating_system not in attributes["supported_os"]
+                        len(attributes["supported_os"]) != 0
+                        and operating_system not in attributes["supported_os"]
                 ):
                     passes_all_restrictions = False
                 if passes_all_restrictions or (
-                    "builtin" in attributes and attributes["builtin"]
+                        "builtin" in attributes and attributes["builtin"]
                 ):
                     create_payload_dict["commands"].append(c["cmd"])
             except Exception as e:
@@ -918,16 +918,16 @@ async def create_payload(
 
 
 async def create_wrapper_payload(
-    mythic: mythic_classes.Mythic,
-    payload_type_name: str,
-    filename: str,
-    operating_system: str,
-    wrapped_payload_uuid: str,
-    build_parameters: List[dict] = None,
-    description: str = "",
-    return_on_complete: bool = True,
-    timeout: int = None,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        payload_type_name: str,
+        filename: str,
+        operating_system: str,
+        wrapped_payload_uuid: str,
+        build_parameters: List[dict] = None,
+        description: str = "",
+        return_on_complete: bool = True,
+        timeout: int = None,
+        custom_return_attributes: str = None,
 ):
     """
     This tasks Mythic to create a new payload based on the supplied parameters. If `return_on_complete` is false, then this will return immediately after issuing the task to Mythic.
@@ -972,10 +972,10 @@ async def create_wrapper_payload(
 
 
 async def waitfor_payload_complete(
-    mythic: mythic_classes.Mythic,
-    payload_uuid: str,
-    timeout: int = None,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        payload_uuid: str,
+        timeout: int = None,
+        custom_return_attributes: str = None,
 ) -> dict:
     """
     Execute a subscription to wait for the `build_phase` of the specified payload to be something other than 'building'.
@@ -993,7 +993,7 @@ async def waitfor_payload_complete(
         """
     variables = {"uuid": payload_uuid}
     async for result in mythic_utilities.graphql_subscription(
-        mythic=mythic, query=subscription, variables=variables, timeout=timeout
+            mythic=mythic, query=subscription, variables=variables, timeout=timeout
     ):
         if len(result["payload"]) > 0:
             if result["payload"][0]["build_phase"] != "building":
@@ -1002,7 +1002,7 @@ async def waitfor_payload_complete(
 
 
 async def get_all_payloads(
-    mythic: mythic_classes.Mythic, custom_return_attributes: str = None
+        mythic: mythic_classes.Mythic, custom_return_attributes: str = None
 ) -> List[dict]:
     """
     Get information about all payloads currently registered with Mythic (this includes deleted payloads and autogenerated ones for tasking).
@@ -1021,9 +1021,9 @@ async def get_all_payloads(
 
 
 async def get_payload_by_uuid(
-    mythic: mythic_classes.Mythic,
-    payload_uuid: str,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        payload_uuid: str,
+        custom_return_attributes: str = None,
 ) -> dict:
     """
     Get information about the specified payload.
@@ -1046,8 +1046,8 @@ async def get_payload_by_uuid(
 
 
 async def download_payload(
-    mythic: mythic_classes.Mythic,
-    payload_uuid: str,
+        mythic: mythic_classes.Mythic,
+        payload_uuid: str,
 ) -> bytes:
     """
     Download the raw bytes for the payload specified by payload_uuid
@@ -1071,13 +1071,61 @@ async def download_payload(
         raise e
 
 
+async def payload_check_config(mythic: mythic_classes.Mythic,
+                               payload_uuid: str,
+                               ) -> dict:
+    """
+    Check the payload's configuration against C2 profile configurations
+    :param mythic:
+    :param payload_uuid:
+    :return: dict with status, error, and output keys
+    """
+    config_query = f"""
+    query checkPayloadConfig($uuid: String!){{
+        config_check(uuid: $uuid){{
+            status
+            error
+            output
+        }}
+    }}
+    """
+    configStatus = await mythic_utilities.graphql_post(
+        mythic=mythic, query=config_query, variables={"uuid": payload_uuid}
+    )
+    return configStatus["config_check"]
+
+
+async def payload_redirect_rules(mythic: mythic_classes.Mythic,
+                                 payload_uuid: str,
+                                 ) -> dict:
+    """
+    Get redirect rules for a payload
+    :param mythic:
+    :param payload_uuid:
+    :return: dict with status, error, and output keys
+    """
+    config_query = f"""
+    query checkPayloadRedirectRules($uuid: String!){{
+        redirect_rules(uuid: $uuid){{
+            status
+            error
+            output
+        }}
+    }}
+    """
+    redirectRules = await mythic_utilities.graphql_post(
+        mythic=mythic, query=config_query, variables={"uuid": payload_uuid}
+    )
+    return redirectRules["redirect_rules"]
+
+
 # ######### Task Output Functions ###########
 
 
 async def waitfor_for_task_output(
-    mythic: mythic_classes.Mythic,
-    task_display_id: int,
-    timeout: int = None,
+        mythic: mythic_classes.Mythic,
+        task_display_id: int,
+        timeout: int = None,
 ) -> bytes:
     """
     Execute a subscription for the specified task and aggregate all of the output for it.
@@ -1099,7 +1147,7 @@ async def waitfor_for_task_output(
     variables = {"task_display_id": task_display_id}
     aggregated_output = []
     async for result in mythic_utilities.graphql_subscription(
-        mythic=mythic, query=subscription, variables=variables, timeout=timeout
+            mythic=mythic, query=subscription, variables=variables, timeout=timeout
     ):
         aggregated_output = result["task_stream"][0]["responses"]
         if "error" in result["task_stream"][0]["status"] or result["task_stream"][0]["completed"]:
@@ -1111,7 +1159,7 @@ async def waitfor_for_task_output(
 
 
 async def get_all_task_output(
-    mythic: mythic_classes.Mythic, custom_return_attributes: str = None, batch_size: int = 10
+        mythic: mythic_classes.Mythic, custom_return_attributes: str = None, batch_size: int = 10
 ) -> AsyncGenerator:
     """
     Execute a query to get all current responses.
@@ -1139,7 +1187,7 @@ async def get_all_task_output(
 
 
 async def get_all_task_output_by_id(
-    mythic: mythic_classes.Mythic, task_display_id: int, custom_return_attributes: str = None
+        mythic: mythic_classes.Mythic, task_display_id: int, custom_return_attributes: str = None
 ) -> List[dict]:
     """
     Execute a query to get all responses for a given task.
@@ -1161,10 +1209,10 @@ async def get_all_task_output_by_id(
 
 
 async def subscribe_new_task_output(
-    mythic: mythic_classes.Mythic,
-    timeout: int = None,
-    custom_return_attributes: str = None,
-    batch_size: int = 50,
+        mythic: mythic_classes.Mythic,
+        timeout: int = None,
+        custom_return_attributes: str = None,
+        batch_size: int = 50,
 ) -> AsyncGenerator:
     """
     Execute a subscription to get all new responses.
@@ -1187,7 +1235,7 @@ async def subscribe_new_task_output(
         while True:
             variables = {"now": latest_time, "batch_size": batch_size}
             async for result in mythic_utilities.graphql_subscription(
-                mythic=mythic, query=subscription, variables=variables, timeout=timeout
+                    mythic=mythic, query=subscription, variables=variables, timeout=timeout
             ):
                 yield result["response_stream"]
 
@@ -1196,10 +1244,10 @@ async def subscribe_new_task_output(
 
 
 async def subscribe_all_task_output(
-    mythic: mythic_classes.Mythic,
-    timeout: int = None,
-    custom_return_attributes: str = None,
-    batch_size: int = 10
+        mythic: mythic_classes.Mythic,
+        timeout: int = None,
+        custom_return_attributes: str = None,
+        batch_size: int = 10
 ) -> AsyncGenerator:
     """
     Execute a query to get all current responses, then execute a subscription to get all new responses.
@@ -1210,11 +1258,11 @@ async def subscribe_all_task_output(
     If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `id` and `timestamp` fields, everything else is optional.
     """
     async for t in get_all_task_output(
-        mythic=mythic, custom_return_attributes=custom_return_attributes, batch_size=batch_size
+            mythic=mythic, custom_return_attributes=custom_return_attributes, batch_size=batch_size
     ):
         yield t
     async for t in subscribe_new_task_output(
-        mythic=mythic, custom_return_attributes=custom_return_attributes, timeout=timeout, batch_size=batch_size
+            mythic=mythic, custom_return_attributes=custom_return_attributes, timeout=timeout, batch_size=batch_size
     ):
         yield t
 
@@ -1223,9 +1271,9 @@ async def subscribe_all_task_output(
 
 
 async def create_operator(
-    mythic: mythic_classes.Mythic,
-    username: str,
-    password: str,
+        mythic: mythic_classes.Mythic,
+        username: str,
+        password: str,
 ) -> dict:
     """
     Create a new operator within Mythic with the specified username and password.
@@ -1301,7 +1349,8 @@ async def set_active_status(mythic: mythic_classes.Mythic, username: str, active
     return resp
 
 
-async def set_password(mythic: mythic_classes.Mythic, username: str, new_password: str, old_password: str = None) -> dict:
+async def set_password(mythic: mythic_classes.Mythic, username: str, new_password: str,
+                       old_password: str = None) -> dict:
     resp = await execute_custom_query(
         mythic=mythic,
         query="""
@@ -1363,11 +1412,12 @@ async def get_me(mythic: mythic_classes.Mythic) -> dict:
     )
     return resp
 
+
 # ########## File Functions ##############
 
 
 async def register_file(
-    mythic: mythic_classes.Mythic, filename: str, contents: bytes
+        mythic: mythic_classes.Mythic, filename: str, contents: bytes
 ) -> str:
     """
     Upload a file to Mythic via a form and get back a file_id that can be used in tasking.
@@ -1394,12 +1444,12 @@ async def download_file(mythic: mythic_classes.Mythic, file_uuid: str) -> bytes:
 
 
 async def download_file_chunked(
-    mythic: mythic_classes.Mythic, file_uuid: str, chunk_size: int = 512000
+        mythic: mythic_classes.Mythic, file_uuid: str, chunk_size: int = 512000
 ) -> AsyncGenerator:
     url = f"{mythic.http}{mythic.server_ip}:{mythic.server_port}/direct/download/{file_uuid}"
     try:
         async for t in mythic_utilities.http_get_chunked(
-            mythic=mythic, url=url, chunk_size=chunk_size
+                mythic=mythic, url=url, chunk_size=chunk_size
         ):
             yield t
     except Exception as e:
@@ -1407,7 +1457,7 @@ async def download_file_chunked(
 
 
 async def get_all_downloaded_files(
-    mythic: mythic_classes.Mythic, custom_return_attributes: str = None, batch_size: int = 100
+        mythic: mythic_classes.Mythic, custom_return_attributes: str = None, batch_size: int = 100
 ) -> AsyncGenerator:
     """
     Execute a query to get metadata about all files Mythic knows about that are downloaded from agents.
@@ -1457,7 +1507,8 @@ async def subscribe_new_downloaded_files(mythic: mythic_classes.Mythic,
         {graphql_queries.file_data_fragment if custom_return_attributes is None else ''}
         """
     async for result in mythic_utilities.graphql_subscription(
-        mythic=mythic, query=file_query, timeout=timeout, variables={"batch_size": batch_size, "now": str(datetime.utcnow())}
+            mythic=mythic, query=file_query, timeout=timeout,
+            variables={"batch_size": batch_size, "now": str(datetime.utcnow())}
     ):
         yield result["filemeta_stream"]
 
@@ -1477,13 +1528,13 @@ async def subscribe_all_downloaded_files(mythic: mythic_classes.Mythic,
     ):
         yield result
     async for result in subscribe_new_downloaded_files(
-        mythic=mythic, batch_size=batch_size, timeout=timeout, custom_return_attributes=custom_return_attributes
+            mythic=mythic, batch_size=batch_size, timeout=timeout, custom_return_attributes=custom_return_attributes
     ):
         yield result
 
 
 async def get_all_screenshots(
-    mythic: mythic_classes.Mythic, custom_return_attributes: str = None, batch_size: int = 10
+        mythic: mythic_classes.Mythic, custom_return_attributes: str = None, batch_size: int = 10
 ) -> AsyncGenerator:
     """
     Execute a query to get metadata about all of the screenshots Mythic knows about that are downloaded from agents.
@@ -1515,7 +1566,7 @@ async def get_all_screenshots(
 
 
 async def get_all_uploaded_files(
-    mythic: mythic_classes.Mythic, custom_return_attributes: str = None, batch_size: int = 10,
+        mythic: mythic_classes.Mythic, custom_return_attributes: str = None, batch_size: int = 10,
 ) -> AsyncGenerator:
     """
     Execute a query to get metadata about all of the uploaded files Mythic knows about.
@@ -1547,7 +1598,7 @@ async def get_all_uploaded_files(
 
 
 async def update_file_comment(
-    mythic: mythic_classes.Mythic, file_uuid: str, comment: str
+        mythic: mythic_classes.Mythic, file_uuid: str, comment: str
 ) -> dict:
     """
     Update a file's comment within Mythic
@@ -1574,7 +1625,7 @@ async def update_file_comment(
 
 
 async def get_operations(
-    mythic: mythic_classes.Mythic, custom_return_attributes: str = None
+        mythic: mythic_classes.Mythic, custom_return_attributes: str = None
 ) -> List[dict]:
     """
     Get information about the current operations known to the authenticated user.
@@ -1596,9 +1647,9 @@ async def get_operations(
 
 
 async def create_operation(
-    mythic: mythic_classes.Mythic,
-    operation_name: str,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        operation_name: str,
+        custom_return_attributes: str = None,
 ):
     """
     Create a new operation within Mythic (the account creating the operation will automatically be the operation lead).
@@ -1621,10 +1672,10 @@ async def create_operation(
 
 
 async def add_operator_to_operation(
-    mythic: mythic_classes.Mythic,
-    operation_name: str,
-    operator_username: str,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        operation_name: str,
+        operator_username: str,
+        custom_return_attributes: str = None,
 ) -> dict:
     """
     Add the specified operator to the specified operation. This will raise Exceptions if the operator/operation cannot be found or if the user is already added.
@@ -1643,8 +1694,8 @@ async def add_operator_to_operation(
         },
     )
     if (
-        len(operator_and_operation["operation"]) != 1
-        or len(operator_and_operation["operator"]) != 1
+            len(operator_and_operation["operation"]) != 1
+            or len(operator_and_operation["operator"]) != 1
     ):
         raise Exception("Didn't find an exact match for the operation name and username")
     if len(operator_and_operation["operation"][0]["operatoroperations"]) != 0:
@@ -1668,10 +1719,10 @@ async def add_operator_to_operation(
 
 
 async def remove_operator_from_operation(
-    mythic: mythic_classes.Mythic,
-    operation_name: str,
-    operator_username: str,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        operation_name: str,
+        operator_username: str,
+        custom_return_attributes: str = None,
 ) -> dict:
     """
     Removes the specified operator from the specified operation. This will raise Exceptions if the operator/operation cannot be found or if the user isn't part of the operation already.
@@ -1688,8 +1739,8 @@ async def remove_operator_from_operation(
         },
     )
     if (
-        len(operator_and_operation["operation"]) != 1
-        or len(operator_and_operation["operator"]) != 1
+            len(operator_and_operation["operation"]) != 1
+            or len(operator_and_operation["operator"]) != 1
     ):
         raise Exception("Didn't find an exact match for the operation name and username")
     if len(operator_and_operation["operation"][0]["operatoroperations"]) != 1:
@@ -1713,11 +1764,11 @@ async def remove_operator_from_operation(
 
 
 async def update_operator_in_operation(
-    mythic: mythic_classes.Mythic,
-    view_mode: str,
-    operation_name: str,
-    operator_username: str,
-    custom_return_attributes: str = None,
+        mythic: mythic_classes.Mythic,
+        view_mode: str,
+        operation_name: str,
+        operator_username: str,
+        custom_return_attributes: str = None,
 ) -> dict:
     """
     Updates the specified operator in the specified operation. This will raise Exceptions if the operator/operation cannot be found or if the user isn't part of the operation already.
@@ -1734,8 +1785,8 @@ async def update_operator_in_operation(
         },
     )
     if (
-        len(operator_and_operation["operation"]) != 1
-        or len(operator_and_operation["operator"]) != 1
+            len(operator_and_operation["operation"]) != 1
+            or len(operator_and_operation["operator"]) != 1
     ):
         raise Exception("Didn't find an exact match for the operation name and username")
     if len(operator_and_operation["operation"][0]["operatoroperations"]) != 1:
@@ -1760,14 +1811,14 @@ async def update_operator_in_operation(
 
 
 async def update_operation(
-    mythic: mythic_classes.Mythic,
-    operation_name: str,
-    lead_operator_username: str = None,
-    new_operation_name: str = None,
-    channel: str = None,
-    webhook: str = None,
-    complete: bool = None,
-    deleted: bool = None,
+        mythic: mythic_classes.Mythic,
+        operation_name: str,
+        lead_operator_username: str = None,
+        new_operation_name: str = None,
+        channel: str = None,
+        webhook: str = None,
+        complete: bool = None,
+        deleted: bool = None,
 ) -> None:
     """
     This function updates various aspects about the named operation. You must be either the lead of the operation or a global admin to edit this information.
@@ -1843,7 +1894,7 @@ async def update_operation(
 
 
 async def update_current_operation_for_user(
-    mythic: mythic_classes.Mythic, operator_id: int, operation_id: int
+        mythic: mythic_classes.Mythic, operator_id: int, operation_id: int
 ):
     """
     Sets the specified operation as current for the specified user.
@@ -1869,11 +1920,11 @@ async def update_current_operation_for_user(
 
 
 async def subscribe_new_processes(
-    mythic: mythic_classes.Mythic,
-    host: str = None,
-    custom_return_attributes: str = None,
-    batch_size: int = 100,
-    timeout: int = None
+        mythic: mythic_classes.Mythic,
+        host: str = None,
+        custom_return_attributes: str = None,
+        batch_size: int = 100,
+        timeout: int = None
 ) -> AsyncGenerator:
     """
     Execute a query against Mythic to get all processes on this host that hooks into Mythic's process browser.
@@ -1896,9 +1947,9 @@ async def subscribe_new_processes(
     {graphql_queries.mythictree_fragment if custom_return_attributes is None else ''}
     """
     async for output in mythic_utilities.graphql_subscription(
-        mythic=mythic, query=process_query,
-        variables={"host": host_search, "batch_size": batch_size, "now": str(datetime.utcnow())},
-        timeout=timeout
+            mythic=mythic, query=process_query,
+            variables={"host": host_search, "batch_size": batch_size, "now": str(datetime.utcnow())},
+            timeout=timeout
     ):
         yield output["mythictree_stream"]
 
@@ -1933,7 +1984,8 @@ async def get_all_processes(
     offset = 0
     while True:
         output = await mythic_utilities.graphql_post(
-                mythic=mythic, query=process_query, variables={"host": host_search, "batch_size": batch_size, "offset": offset}
+            mythic=mythic, query=process_query,
+            variables={"host": host_search, "batch_size": batch_size, "offset": offset}
         )
         if len(output["mythictree"]) > 0:
             yield output["mythictree"]
@@ -1959,8 +2011,9 @@ async def subscribe_all_processes(
                                            timeout=timeout):
         yield t
 
+
 # ####### Credential Functions #############
-async def create_credential(mythic:mythic_classes.Mythic,
+async def create_credential(mythic: mythic_classes.Mythic,
                             credential: str,
                             account: str = "",
                             realm: str = "",
@@ -1991,7 +2044,7 @@ async def create_credential(mythic:mythic_classes.Mythic,
 
 
 async def get_unique_compromised_hosts(
-    mythic: mythic_classes.Mythic,
+        mythic: mythic_classes.Mythic,
 ) -> List[str]:
     """
     Query all callbacks, filebrowser data, and process data in the current operation and get a unique list of hostnames.
@@ -2027,7 +2080,7 @@ async def get_unique_compromised_hosts(
 
 
 async def get_unique_compromised_accounts(
-    mythic: mythic_classes.Mythic,
+        mythic: mythic_classes.Mythic,
 ) -> List[str]:
     """
     Get all of the user accounts from callbacks and credentials, then return a unique list of those.
@@ -2058,7 +2111,7 @@ async def get_unique_compromised_accounts(
 
 
 async def get_unique_compromised_ips(
-    mythic: mythic_classes.Mythic,
+        mythic: mythic_classes.Mythic,
 ) -> List[str]:
     """
     Query all callbacks to get a unique list of ip addresses.
@@ -2117,6 +2170,7 @@ async def send_custom_webhook_message(
 
     return await mythic_utilities.graphql_post(mythic=mythic, query=query, variables={"webhook_data": webhook_data,
                                                                                       "webhook_type": webhook_type})
+
 
 # ####### Tag Functions ############
 
@@ -2228,6 +2282,7 @@ async def create_tag(mythic: mythic_classes.Mythic,
               }}
             }}
             """
+
     output = []
     if credential_ids is not None:
         for target_id in credential_ids:
@@ -2272,4 +2327,3 @@ async def create_tag(mythic: mythic_classes.Mythic,
             })
             output.append(resp)
     return output
-

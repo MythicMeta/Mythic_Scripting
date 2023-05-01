@@ -244,7 +244,7 @@ async def update_callback(
         sleep_info: str = None,
         locked: bool = None,
         description: str = None,
-        ips: list[str] = None,
+        ips: List[str] = None,
         user: str = None,
         host: str = None,
         os: str = None,
@@ -2266,13 +2266,13 @@ async def create_tag(mythic: mythic_classes.Mythic,
                      source: str = "",
                      url: str = "",
                      data: str = "",
-                     credential_ids: list[int] = None,
-                     filemeta_ids: list[int] = None,
-                     keylog_ids: list[int] = None,
-                     mythictree_ids: list[int] = None,
-                     response_ids: list[int] = None,
-                     task_ids: list[int] = None,
-                     taskartifact_ids: list[int] = None) -> list[dict]:
+                     credential_ids: List[int] = None,
+                     filemeta_ids: List[int] = None,
+                     keylog_ids: List[int] = None,
+                     mythictree_ids: List[int] = None,
+                     response_ids: List[int] = None,
+                     task_ids: List[int] = None,
+                     taskartifact_ids: List[int] = None) -> List[dict]:
     def get_mutation(target_object: str) -> str:
         return f"""
             mutation createTag($tagtype_id: Int!, $source: String!, $url: String!, $data: jsonb!, ${target_object}: Int!) {{

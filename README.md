@@ -25,7 +25,7 @@ Version 0.0.26 of the `mythic` package supports version 2.3+ of the Mythic proje
 Version 0.0.29-0.0.36 of the `mythic` package supports version 2.3+ of the Mythic project utilizing the new GraphQL endpoints and reports as version "3".
 This will be the last version that supports the old mythic_rest interface. Starting with version 0.1.0, the `mythic` PyPi package will only support the new GraphQL interface and will report as version "4".
 
-Version 0.1.0rc1+ of the `mythic` package supports version 3.0 of the Mythic project utilizing the new GraphQL endpoints.
+Version 0.1.0 of the `mythic` package supports version 3.0 of the Mythic project utilizing the new GraphQL endpoints.
 
 # Information
 

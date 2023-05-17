@@ -2172,6 +2172,72 @@ async def send_custom_webhook_message(
                                                                                       "webhook_type": webhook_type})
 
 
+# ####### C2 Functions #############
+
+async def start_stop_c2_profile(
+        mythic: mythic_classes.Mythic,
+        c2_profile_name: str,
+        action: str = "start"
+):
+    query = """
+    query getC2IdFromName($c2_name: String!) {
+      c2profile(where: {name: {_eq: $c2_name}}){
+        id
+      }
+    }
+    """
+    resp = await mythic_utilities.graphql_post(mythic=mythic, query=query, variables={
+        "c2_name": c2_profile_name,
+    })
+    if len(resp["c2profile"]) == 0:
+        raise Exception(f"Failed to find c2 profile {c2_profile_name}")
+    start_stop = """
+    mutation startStopC2Profile($id: Int!, $action: String!){
+        startStopProfile(id: $id, action: $action){
+            status
+            error
+            output
+        }
+    }
+    """
+    resp = await mythic_utilities.graphql_post(mythic=mythic, query=start_stop, variables={
+        "id": resp["c2profile"][0]["id"], "action": action,
+    })
+    return resp["startStopProfile"]
+
+
+async def create_saved_c2_instance(
+        mythic: mythic_classes.Mythic,
+        instance_name: str,
+        c2_profile_name: str,
+        c2_parameters: dict
+):
+    query = """
+    query getC2IdFromName($c2_name: String!) {
+      c2profile(where: {name: {_eq: $c2_name}}){
+        id
+      }
+    }
+    """
+    resp = await mythic_utilities.graphql_post(mythic=mythic, query=query, variables={
+        "c2_name": c2_profile_name,
+    })
+    if len(resp["c2profile"]) == 0:
+        raise Exception(f"Failed to find c2 profile {c2_profile_name}")
+    mutation = """
+    mutation createNewC2Instance($instance_name: String!, $c2_instance: String!, $c2profile_id: Int!){
+      create_c2_instance(c2_instance: $c2_instance, instance_name: $instance_name, c2profile_id: $c2profile_id){
+        status
+        error
+      }
+    }
+    """
+    resp = await mythic_utilities.graphql_post(mythic=mythic, query=mutation, variables={
+        "instance_name": instance_name, "c2profile_id": resp["c2profile"][0]["id"], "c2_instance": json.dumps(c2_parameters)
+    })
+    return resp["create_c2_instance"]
+
+
 # ####### Tag Functions ############
 
 

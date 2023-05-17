@@ -70,7 +70,7 @@ async def get_ws_transport(mythic: mythic_classes.Mythic) -> WebsocketsTransport
     websocket_transport = WebsocketsTransport(
         url=f"{mythic.ws}{mythic.server_ip}:{mythic.server_port}/graphql/",
         headers=get_headers(mythic),
-        ssl=ssl_context,
+        ssl=ssl_context if mythic.ssl else False,
     )
     return websocket_transport
 

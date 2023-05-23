@@ -142,6 +142,7 @@ async def graphql_post(
         async with Client(
             transport=await get_http_transport(mythic=mythic),
             fetch_schema_from_transport=False,
+            execute_timeout=None if mythic.global_timeout < 0 else mythic.global_timeout,
             schema=mythic.schema,
         ) as session:
             result = await session.execute(query_data, variable_values=variables)
@@ -171,6 +172,7 @@ async def graphql_subscription(
         async with Client(
             transport=await get_ws_transport(mythic=mythic),
             fetch_schema_from_transport=False,
+            execute_timeout=None,
         ) as session:
             logging.debug(f"Started subscription for {query}")
             async for result in timeout_generator(

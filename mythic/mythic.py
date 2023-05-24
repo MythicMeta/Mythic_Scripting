@@ -1607,8 +1607,8 @@ async def get_uploaded_file_by_name(
     If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `id` field, everything else is optional.
     """
     file_query = f"""
-    query uploaded_file_by_name($name: String!){{
-        filemeta(where: {{is_screenshot: {{_eq: false}}, is_download_from_agent: {{_eq: false}}, is_payload: {{_eq: false}}, filename_utf8: {{_eq: $name}}}}, limit: 1){{
+    query uploaded_file_by_name($filename: String!){{
+        filemeta(where: {{is_screenshot: {{_eq: false}}, is_download_from_agent: {{_eq: false}}, is_payload: {{_eq: false}}, filename_utf8: {{_eq: $filename}}}}, limit: 1){{
             {custom_return_attributes if custom_return_attributes is not None else '...file_data_fragment'}
         }}
     }}

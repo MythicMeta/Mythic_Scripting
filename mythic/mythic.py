@@ -1597,6 +1597,30 @@ async def get_all_uploaded_files(
             break
 
 
+async def get_uploaded_file_by_name(
+        mythic: mythic_classes.Mythic, custom_return_attributes: str = None, filename: str = None,
+) -> AsyncGenerator:
+    """
+    Execute a query to get metadata about the uploaded file by name.
+    To download the contents of a file, use the `download_file` function with the agent_file_id.
+    The default set of attributes returned in the dictionary can be found at graphql_queries.file_data_fragment.
+    If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `id` field, everything else is optional.
+    """
+    file_query = f"""
+    query uploaded_file_by_name($name: String!){{
+        filemeta(where: {{is_screenshot: {{_eq: false}}, is_download_from_agent: {{_eq: false}}, is_payload: {{_eq: false}}, filename_utf8: {{_eq: $name}}}}, limit: 1){{
+            {custom_return_attributes if custom_return_attributes is not None else '...file_data_fragment'}
+        }}
+    }}
+    {graphql_queries.file_data_fragment if custom_return_attributes is None else ''}
+    """
+    output = await mythic_utilities.graphql_post(
+        mythic=mythic, query=file_query,
+    )
+    if len(output["filemeta"]) > 0:
+        return output["filemeta"]
+
+
 async def update_file_comment(
         mythic: mythic_classes.Mythic, file_uuid: str, comment: str
 ) -> dict:

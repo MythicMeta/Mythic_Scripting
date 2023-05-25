@@ -1617,7 +1617,7 @@ async def get_uploaded_file_by_name(
     output = await mythic_utilities.graphql_post(
         mythic=mythic, query=file_query,
     )
-    return output["filemeta"]
+    return output["filemeta"][0] if output["filemeta"] else {}
 
 
 async def update_file_comment(

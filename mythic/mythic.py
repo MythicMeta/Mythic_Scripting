@@ -1597,7 +1597,7 @@ async def get_all_uploaded_files(
             break
 
 
-async def get_uploaded_file_by_name(
+async def get_latest_uploaded_file_by_name(
         mythic: mythic_classes.Mythic, custom_return_attributes: str = None, filename: str = None,
 ) -> dict:
     """

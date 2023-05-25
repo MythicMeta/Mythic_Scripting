@@ -1599,7 +1599,7 @@ async def get_all_uploaded_files(
 
 async def get_uploaded_file_by_name(
         mythic: mythic_classes.Mythic, custom_return_attributes: str = None, filename: str = None,
-) -> AsyncGenerator:
+) -> dict:
     """
     Execute a query to get metadata about the uploaded file by name.
     To download the contents of a file, use the `download_file` function with the agent_file_id.
@@ -1608,7 +1608,7 @@ async def get_uploaded_file_by_name(
     """
     file_query = f"""
     query uploaded_file_by_name($filename: String!){{
-        filemeta(where: {{is_screenshot: {{_eq: false}}, is_download_from_agent: {{_eq: false}}, is_payload: {{_eq: false}}, filename_utf8: {{_eq: $filename}}}}, limit: 1){{
+        filemeta(where: {{is_screenshot: {{_eq: false}}, is_download_from_agent: {{_eq: false}}, is_payload: {{_eq: false}}, deleted: {{_eq: false}}, filename_utf8: {{_eq: $filename}}}}, order_by: {{id: desc}}, limit: 1){{
             {custom_return_attributes if custom_return_attributes is not None else '...file_data_fragment'}
         }}
     }}
@@ -1617,8 +1617,7 @@ async def get_uploaded_file_by_name(
     output = await mythic_utilities.graphql_post(
         mythic=mythic, query=file_query,
     )
-    if len(output["filemeta"]) > 0:
-        return output["filemeta"]
+    return output["filemeta"]
 
 
 async def update_file_comment(

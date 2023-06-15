@@ -1155,7 +1155,49 @@ async def waitfor_for_task_output(
     final_output = b""
     for output in aggregated_output:
         final_output += base64.b64decode(output["response_text"])
+    subtaskIds = await get_all_subtask_ids(mythic=mythic, task_display_id=task_display_id, fetch_display_id_instead=True)
+    for subtask in subtaskIds:
+        subtaskOutput = await get_all_task_output_by_id(mythic=mythic, task_display_id=subtask)
+        for r in subtaskOutput:
+            final_output += base64.b64decode(r["response_text"])
     return final_output
+
+
+async def get_all_subtask_ids(mythic: mythic_classes.Mythic, task_display_id: int,
+                              fetch_display_id_instead: bool) -> List[int]:
+    subtaskIds = []
+    idQuery = f"""
+    query taskIdFromDisplayID($task_display_id: Int!){{
+        task(where: {{display_id: {{_eq: $task_display_id}}}}){{
+            id
+        }}
+    }}
+    """
+    subtaskQuery = """
+    query subtaskList($task_id: Int!){
+        task(where: {parent_task_id: {_eq: $task_id}}){
+            id
+            display_id
+        }
+    }
+    """
+    initial = await mythic_utilities.graphql_post(
+        mythic=mythic, query=idQuery, variables={"task_display_id": task_display_id}
+    )
+    if initial["task"]:
+        taskIdsToCheck = [initial["task"][0]["id"]]
+        while len(taskIdsToCheck) > 0:
+            currentTaskId = taskIdsToCheck.pop()
+            subtasks = await mythic_utilities.graphql_post(
+                mythic=mythic, query=subtaskQuery, variables={"task_id": currentTaskId}
+            )
+            for t in subtasks["task"]:
+                taskIdsToCheck.append(t["id"])
+                if fetch_display_id_instead:
+                    subtaskIds.append(t["display_id"])
+                else:
+                    subtaskIds.append(t["id"])
+    return subtaskIds
 
 
 async def get_all_task_output(
@@ -1205,6 +1247,33 @@ async def get_all_task_output_by_id(
     initial = await mythic_utilities.graphql_post(
         mythic=mythic, query=query, variables={"task_display_id": task_display_id}
     )
+    return initial["response"]
+
+
+async def get_all_task_and_subtask_output_by_id(
+        mythic: mythic_classes.Mythic, task_display_id: int, custom_return_attributes: str = None
+) -> List[dict]:
+    """
+    Execute a query to get all responses for a given task.
+    The default set of attributes returned in the dictionary can be found at graphql_queries.task_output_fragment.
+    If you want to use your own `custom_return_attributes` string to identify what information you want back, you have to include the `id` and `timestamp` fields, everything else is optional.
+    """
+    query = f"""
+    query AllTaskResponses($task_display_id: Int!){{
+        response(order_by: {{id: asc}}, where: {{task:{{display_id: {{_eq: $task_display_id}}}}}}) {{
+            {custom_return_attributes if custom_return_attributes is not None else '...task_output_fragment'}
+        }}
+    }}
+    {graphql_queries.task_output_fragment if custom_return_attributes is None else ''}
+    """
+    initial = await mythic_utilities.graphql_post(
+        mythic=mythic, query=query, variables={"task_display_id": task_display_id}
+    )
+    subtaskIds = await get_all_subtask_ids(mythic=mythic, task_display_id=task_display_id, fetch_display_id_instead=True)
+    for subtask in subtaskIds:
+        subtaskOutput = await get_all_task_output_by_id(mythic=mythic, task_display_id=subtask)
+        for r in subtaskOutput:
+            initial["response"].append(r)
     return initial["response"]
 
 
@@ -2256,7 +2325,8 @@ async def create_saved_c2_instance(
     }
     """
     resp = await mythic_utilities.graphql_post(mythic=mythic, query=mutation, variables={
-        "instance_name": instance_name, "c2profile_id": resp["c2profile"][0]["id"], "c2_instance": json.dumps(c2_parameters)
+        "instance_name": instance_name, "c2profile_id": resp["c2profile"][0]["id"],
+        "c2_instance": json.dumps(c2_parameters)
     })
     return resp["create_c2_instance"]
 

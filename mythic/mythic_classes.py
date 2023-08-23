@@ -1,4 +1,11 @@
 import json
+import logging
+import sys
+
+LOG_FORMAT = (
+    "%(levelname) -4s %(asctime)s %(funcName) "
+    "-3s %(lineno) -5d: %(message)s"
+)
 
 
 class Mythic:
@@ -14,6 +21,8 @@ class Mythic:
         server_port: int = None,
         global_timeout: int = None,
         schema: str = None,
+        log_level: int = logging.WARNING,
+        log_format: str = LOG_FORMAT,
     ):
         self.username = username
         self.password = password
@@ -26,9 +35,16 @@ class Mythic:
         self.http = "http://" if not ssl else "https://"
         self.ws = "ws://" if not ssl else "wss://"
         self.global_timeout = global_timeout if global_timeout is not None else -1
-        self.scripting_version = "0.1.4"
+        self.scripting_version = "0.1.5"
         self.current_operation_id = 0
         self.schema = schema
+        self.log_level = log_level
+        self.log_handler = logging.StreamHandler(sys.stdout)
+        self.logger = logging.getLogger("mythic")
+        self.logger.setLevel(self.log_level)
+        self.log_handler.setLevel(self.log_level)
+        self.log_handler.setFormatter(logging.Formatter(log_format))
+        self.logger.addHandler(self.log_handler)
 
     def __str__(self):
         return json.dumps(

@@ -3,6 +3,7 @@ import json
 import logging
 from datetime import datetime
 from typing import AsyncGenerator, List, Union
+import asyncio
 
 import aiohttp
 
@@ -17,8 +18,12 @@ WARNING = 30
 WARN = WARNING
 INFO = 20
 DEBUG = 10
-NOTSET = 0
 """
+
+LOG_FORMAT = (
+    "%(levelname) -4s %(asctime)s %(funcName) "
+    "-3s %(lineno) -5d: %(message)s"
+)
 
 
 async def login(
@@ -30,6 +35,7 @@ async def login(
         ssl: bool = True,
         timeout: int = -1,
         logging_level: int = logging.WARNING,
+        log_format: str = LOG_FORMAT,
 ) -> mythic_classes.Mythic:
     """
     Create a new Mythic instance based on the connection information and attempt to validate the credentials.
@@ -44,9 +50,11 @@ async def login(
         apitoken=apitoken,
         ssl=ssl,
         global_timeout=timeout,
+        log_level=logging_level,
+        log_format=log_format,
         schema=None,
     )
-    logging.basicConfig(format="%(levelname)s:%(message)s", level=logging_level)
+    #logging.basicConfig(format="%(levelname)s:%(message)s", level=logging_level)
     if apitoken is None:
         url = f"{mythic.http}{mythic.server_ip}:{mythic.server_port}/auth"
         data = {
@@ -54,7 +62,7 @@ async def login(
             "password": mythic.password,
             "scripting_version": mythic.scripting_version,
         }
-        logging.debug(
+        mythic.logger.debug(
             f"[*] Logging into Mythic as scripting_version {mythic.scripting_version}"
         )
         try:
@@ -89,13 +97,13 @@ async def login(
                     )
             return mythic
         except Exception as e:
-            logging.exception(f"[-] Failed to authenticate to Mythic: \n{str(e)}")
+            mythic.logger.error(f"[-] Failed to authenticate to Mythic: {str(e)}")
             raise e
     else:
         try:
             return mythic
         except Exception as e:
-            logging.exception(f"[-] Failed to authenticate to Mythic: \n{str(e)}")
+            mythic.logger.error(f"[-] Failed to authenticate to Mythic: {str(e)}")
             raise e
 
 
@@ -107,7 +115,7 @@ async def execute_custom_query(
             mythic=mythic, query=query, variables=variables
         )
     except Exception as e:
-        logging.info(f"Hit an exception within execute_custom_query: {e}")
+        mythic.logger.error(f"Hit an exception within execute_custom_query: {e}")
         raise e
 
 
@@ -125,8 +133,13 @@ async def subscribe_custom_query(
                 mythic=mythic, query=query, variables=variables, timeout=timeout
         ):
             yield result
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
+    except StopAsyncIteration:
+        return
     except Exception as e:
-        logging.info(f"Hit an exception within execute_custom_subscription: {e}")
+        mythic.logger.error(f"Hit an exception within execute_custom_subscription: {e}")
         raise e
 
 
@@ -206,11 +219,13 @@ async def subscribe_new_callbacks(
                 mythic=mythic, query=subscription, variables=variables, timeout=timeout
         ):
             yield result["callback_stream"]
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
     except StopAsyncIteration:
-        logging.info("stopasynciteration exception in subscribe_new_callbacks")
-        pass
+        return
     except Exception as e:
-        logging.info("some other exception in subscribe_new_callbacks")
+        mythic.logger.error(f"some other exception in subscribe_new_callbacks: {e}")
         raise e
 
 
@@ -231,10 +246,18 @@ async def subscribe_all_active_callbacks(
             mythic=mythic, custom_return_attributes=custom_return_attributes
     ):
         yield t
-    async for t in subscribe_new_callbacks(
-            mythic=mythic, timeout=timeout, custom_return_attributes=custom_return_attributes, batch_size=1
-    ):
-        yield t
+    try:
+        async for t in subscribe_new_callbacks(
+                mythic=mythic, timeout=timeout, custom_return_attributes=custom_return_attributes, batch_size=1
+        ):
+            yield t
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
+    except StopAsyncIteration:
+        return
+    except Exception as e:
+        raise e
 
 
 async def update_callback(
@@ -363,10 +386,16 @@ async def subscribe_new_tasks(
                 "now": str(datetime.utcnow()),
                 "batch_size": batch_size,
             }
-        async for result in mythic_utilities.graphql_subscription(
-                mythic=mythic, query=subscription, variables=variables, timeout=timeout
-        ):
-            yield result["task_stream"]
+        try:
+            async for result in mythic_utilities.graphql_subscription(
+                    mythic=mythic, query=subscription, variables=variables, timeout=timeout
+            ):
+                yield result["task_stream"]
+        except asyncio.TimeoutError:
+            mythic.logger.warning("Timeout reached in timeout_generator")
+            return
+        except StopAsyncIteration:
+            return
     except Exception as e:
         raise e
 
@@ -416,10 +445,16 @@ async def subscribe_new_tasks_and_updates(
                 "now": str(datetime.utcnow()),
                 "batch_size": batch_size,
             }
-        async for result in mythic_utilities.graphql_subscription(
-                mythic=mythic, query=subscription, variables=variables, timeout=timeout
-        ):
-            yield result["task_stream"]
+        try:
+            async for result in mythic_utilities.graphql_subscription(
+                    mythic=mythic, query=subscription, variables=variables, timeout=timeout
+            ):
+                yield result["task_stream"]
+        except asyncio.TimeoutError:
+            mythic.logger.warning("Timeout reached in timeout_generator")
+            return
+        except StopAsyncIteration:
+            return
     except Exception as e:
         raise e
 
@@ -444,13 +479,21 @@ async def subscribe_all_tasks(
             callback_display_id=callback_display_id,
     ):
         yield t
-    async for t in subscribe_new_tasks(
-            mythic=mythic,
-            timeout=timeout,
-            custom_return_attributes=custom_return_attributes,
-            callback_display_id=callback_display_id,
-    ):
-        yield t
+    try:
+        async for t in subscribe_new_tasks(
+                mythic=mythic,
+                timeout=timeout,
+                custom_return_attributes=custom_return_attributes,
+                callback_display_id=callback_display_id,
+        ):
+            yield t
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
+    except StopAsyncIteration:
+        return
+    except Exception as e:
+        raise e
 
 
 async def subscribe_all_tasks_and_updates(
@@ -473,14 +516,22 @@ async def subscribe_all_tasks_and_updates(
             callback_display_id=callback_display_id,
     ):
         yield t
-    async for t in subscribe_new_tasks_and_updates(
-            mythic=mythic,
-            timeout=timeout,
-            custom_return_attributes=custom_return_attributes,
-            callback_display_id=callback_display_id,
-            batch_size=1
-    ):
-        yield t[0]
+    try:
+        async for t in subscribe_new_tasks_and_updates(
+                mythic=mythic,
+                timeout=timeout,
+                custom_return_attributes=custom_return_attributes,
+                callback_display_id=callback_display_id,
+                batch_size=1
+        ):
+            yield t[0]
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
+    except StopAsyncIteration:
+        return
+    except Exception as e:
+        raise e
 
 
 async def add_mitre_attack_to_task(
@@ -507,9 +558,9 @@ async def add_mitre_attack_to_task(
                     variables={"task_display_id": task_display_id, "t_num": t},
                 )
                 if resp["addAttackToTask"]["status"] == "error":
-                    logging.warning(f"Failed to add {t} to {task_display_id}: {resp['addAttackToTask']['error']}")
+                    mythic.logger.warning(f"Failed to add {t} to {task_display_id}: {resp['addAttackToTask']['error']}")
             except Exception as e:
-                logging.warning(str(e))
+                mythic.logger.error(str(e))
                 return False
         return True
 
@@ -587,13 +638,21 @@ async def waitfor_task_complete(
     {graphql_queries.task_fragment if custom_return_attributes is None else ''}
     """
     variables = {"task_display_id": task_display_id}
-    async for result in mythic_utilities.graphql_subscription(
-            mythic=mythic, query=subscription, variables=variables, timeout=timeout
-    ):
-        if len(result["task_stream"]) != 1:
-            raise Exception("task not found")
-        if "error" in result["task_stream"][0]["status"] or result["task_stream"][0]["completed"]:
-            return result["task_stream"][0]
+    try:
+        async for result in mythic_utilities.graphql_subscription(
+                mythic=mythic, query=subscription, variables=variables, timeout=timeout
+        ):
+            if len(result["task_stream"]) != 1:
+                raise Exception("task not found")
+            if "error" in result["task_stream"][0]["status"] or result["task_stream"][0]["completed"]:
+                return result["task_stream"][0]
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return {}
+    except StopAsyncIteration:
+        return {}
+    except Exception as e:
+        raise e
 
 
 async def issue_task_all_active_callbacks(
@@ -739,12 +798,20 @@ async def subscribe_new_filebrowser(
     }}
     {graphql_queries.mythictree_fragment if custom_return_attributes is None else ''}
     """
-    async for output in mythic_utilities.graphql_subscription(
-            mythic=mythic, query=process_query,
-            variables={"host": host_search, "batch_size": batch_size, "now": str(datetime.utcnow())},
-            timeout=timeout
-    ):
-        yield output["mythictree_stream"]
+    try:
+        async for output in mythic_utilities.graphql_subscription(
+                mythic=mythic, query=process_query,
+                variables={"host": host_search, "batch_size": batch_size, "now": str(datetime.utcnow())},
+                timeout=timeout
+        ):
+            yield output["mythictree_stream"]
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
+    except StopAsyncIteration:
+        return
+    except Exception as e:
+        raise e
 
 
 async def subscribe_all_filebrowser(
@@ -767,11 +834,19 @@ async def subscribe_all_filebrowser(
             host=host, batch_size=batch_size
     ):
         yield t
-    async for t in subscribe_new_filebrowser(
-            mythic=mythic, timeout=timeout, custom_return_attributes=custom_return_attributes,
-            host=host, batch_size=batch_size
-    ):
-        yield t
+    try:
+        async for t in subscribe_new_filebrowser(
+                mythic=mythic, timeout=timeout, custom_return_attributes=custom_return_attributes,
+                host=host, batch_size=batch_size
+        ):
+            yield t
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
+    except StopAsyncIteration:
+        return
+    except Exception as e:
+        raise e
 
 
 # ######### Command Functions ##############
@@ -992,12 +1067,20 @@ async def waitfor_payload_complete(
         {graphql_queries.payload_build_fragment if custom_return_attributes is None else ''}
         """
     variables = {"uuid": payload_uuid}
-    async for result in mythic_utilities.graphql_subscription(
-            mythic=mythic, query=subscription, variables=variables, timeout=timeout
-    ):
-        if len(result["payload"]) > 0:
-            if result["payload"][0]["build_phase"] != "building":
-                return result["payload"][0]
+    try:
+        async for result in mythic_utilities.graphql_subscription(
+                mythic=mythic, query=subscription, variables=variables, timeout=timeout
+        ):
+            if len(result["payload"]) > 0:
+                if result["payload"][0]["build_phase"] != "building":
+                    return result["payload"][0]
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
+    except StopAsyncIteration:
+        return
+    except Exception as e:
+        raise e
     return None
 
 
@@ -1146,12 +1229,19 @@ async def waitfor_for_task_output(
     """
     variables = {"task_display_id": task_display_id}
     aggregated_output = []
-    async for result in mythic_utilities.graphql_subscription(
-            mythic=mythic, query=subscription, variables=variables, timeout=timeout
-    ):
-        aggregated_output = result["task_stream"][0]["responses"]
-        if "error" in result["task_stream"][0]["status"] or result["task_stream"][0]["completed"]:
-            break
+    try:
+        async for result in mythic_utilities.graphql_subscription(
+                mythic=mythic, query=subscription, variables=variables, timeout=timeout
+        ):
+            aggregated_output = result["task_stream"][0]["responses"]
+            if "error" in result["task_stream"][0]["status"] or result["task_stream"][0]["completed"]:
+                break
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+    except StopAsyncIteration:
+        pass
+    except Exception as e:
+        raise e
     final_output = b""
     for output in aggregated_output:
         final_output += base64.b64decode(output["response_text"])
@@ -1299,17 +1389,24 @@ async def subscribe_new_task_output(
     }}
     {graphql_queries.task_output_fragment if custom_return_attributes is None else ''}
     """
-    try:
-        latest_time = str(datetime.utcnow())
-        while True:
-            variables = {"now": latest_time, "batch_size": batch_size}
+
+    latest_time = str(datetime.utcnow())
+    while True:
+        variables = {"now": latest_time, "batch_size": batch_size}
+        try:
             async for result in mythic_utilities.graphql_subscription(
                     mythic=mythic, query=subscription, variables=variables, timeout=timeout
             ):
                 yield result["response_stream"]
+        except asyncio.TimeoutError:
+            mythic.logger.warning("Timeout reached in timeout_generator")
+            return
+        except StopAsyncIteration:
+            return
+        except Exception as e:
+            mythic.logger.error(e)
+            return
 
-    except Exception as e:
-        raise e
 
 
 async def subscribe_all_task_output(
@@ -1330,10 +1427,18 @@ async def subscribe_all_task_output(
             mythic=mythic, custom_return_attributes=custom_return_attributes, batch_size=batch_size
     ):
         yield t
-    async for t in subscribe_new_task_output(
-            mythic=mythic, custom_return_attributes=custom_return_attributes, timeout=timeout, batch_size=batch_size
-    ):
-        yield t
+    try:
+        async for t in subscribe_new_task_output(
+                mythic=mythic, custom_return_attributes=custom_return_attributes, timeout=timeout, batch_size=batch_size
+        ):
+            yield t
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
+    except StopAsyncIteration:
+        return
+    except Exception as e:
+        raise e
 
 
 # ########## Operator Functions ##############
@@ -1499,7 +1604,7 @@ async def register_file(
     if response["status"] == "success":
         return response["agent_file_id"]
     else:
-        logging.error(f"Failed to register_file with Mythic:\n{response['error']}")
+        mythic.logger.error(f"Failed to register_file with Mythic:\n{response['error']}")
         return None
 
 
@@ -1575,11 +1680,19 @@ async def subscribe_new_downloaded_files(mythic: mythic_classes.Mythic,
         }}
         {graphql_queries.file_data_fragment if custom_return_attributes is None else ''}
         """
-    async for result in mythic_utilities.graphql_subscription(
-            mythic=mythic, query=file_query, timeout=timeout,
-            variables={"batch_size": batch_size, "now": str(datetime.utcnow())}
-    ):
-        yield result["filemeta_stream"]
+    try:
+        async for result in mythic_utilities.graphql_subscription(
+                mythic=mythic, query=file_query, timeout=timeout,
+                variables={"batch_size": batch_size, "now": str(datetime.utcnow())}
+        ):
+            yield result["filemeta_stream"]
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
+    except StopAsyncIteration:
+        return
+    except Exception as e:
+        raise e
 
 
 async def subscribe_all_downloaded_files(mythic: mythic_classes.Mythic,
@@ -1596,10 +1709,18 @@ async def subscribe_all_downloaded_files(mythic: mythic_classes.Mythic,
             mythic=mythic, batch_size=batch_size, custom_return_attributes=custom_return_attributes
     ):
         yield result
-    async for result in subscribe_new_downloaded_files(
-            mythic=mythic, batch_size=batch_size, timeout=timeout, custom_return_attributes=custom_return_attributes
-    ):
-        yield result
+    try:
+        async for result in subscribe_new_downloaded_files(
+                mythic=mythic, batch_size=batch_size, timeout=timeout, custom_return_attributes=custom_return_attributes
+        ):
+            yield result
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
+    except StopAsyncIteration:
+        return
+    except Exception as e:
+        raise e
 
 
 async def get_all_screenshots(
@@ -2038,12 +2159,20 @@ async def subscribe_new_processes(
     }}
     {graphql_queries.mythictree_fragment if custom_return_attributes is None else ''}
     """
-    async for output in mythic_utilities.graphql_subscription(
-            mythic=mythic, query=process_query,
-            variables={"host": host_search, "batch_size": batch_size, "now": str(datetime.utcnow())},
-            timeout=timeout
-    ):
-        yield output["mythictree_stream"]
+    try:
+        async for output in mythic_utilities.graphql_subscription(
+                mythic=mythic, query=process_query,
+                variables={"host": host_search, "batch_size": batch_size, "now": str(datetime.utcnow())},
+                timeout=timeout
+        ):
+            yield output["mythictree_stream"]
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
+    except StopAsyncIteration:
+        return
+    except Exception as e:
+        raise e
 
 
 async def get_all_processes(
@@ -2097,11 +2226,19 @@ async def subscribe_all_processes(
                                      custom_return_attributes=custom_return_attributes,
                                      batch_size=batch_size):
         yield t
-    async for t in subscribe_new_processes(mythic=mythic, host=host,
-                                           custom_return_attributes=custom_return_attributes,
-                                           batch_size=batch_size,
-                                           timeout=timeout):
-        yield t
+    try:
+        async for t in subscribe_new_processes(mythic=mythic, host=host,
+                                               custom_return_attributes=custom_return_attributes,
+                                               batch_size=batch_size,
+                                               timeout=timeout):
+            yield t
+    except asyncio.TimeoutError:
+        mythic.logger.warning("Timeout reached in timeout_generator")
+        return
+    except StopAsyncIteration:
+        return
+    except Exception as e:
+        raise e
 
 
 # ####### Credential Functions #############

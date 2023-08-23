@@ -17,7 +17,7 @@ T = TypeVar("T")
 
 
 async def timeout_generator(
-    it: AsyncGenerator[T, None], timeout: float = None
+        mythic: mythic_classes.Mythic, it: AsyncGenerator[T, None], timeout: float = None
 ) -> AsyncGenerator[T, None]:
     start = time()
     should_timeout = timeout is not None and timeout > 0
@@ -36,13 +36,16 @@ async def timeout_generator(
             task = asyncio.create_task(it.__anext__())
             yield await asyncio.wait_for(task, new_timeout)
         except asyncio.TimeoutError:
-            logging.info("Timeout reached in timeout_generator")
             if task is not None:
                 task.cancel()
-            return
+            raise asyncio.TimeoutError
         except StopAsyncIteration:
-            return
+            if task is not None:
+                task.cancel()
+            raise asyncio.TimeoutError
         except Exception as e:
+            if task is not None:
+                task.cancel()
             raise e
 
 
@@ -168,20 +171,18 @@ async def graphql_subscription(
             raise Exception(
                 "No data or gql_data passed into graphql_subscription function"
             )
-
         async with Client(
             transport=await get_ws_transport(mythic=mythic),
             fetch_schema_from_transport=False,
             execute_timeout=None,
         ) as session:
-            logging.debug(f"Started subscription for {query}")
             async for result in timeout_generator(
+                mythic=mythic,
                 it=session.subscribe(query_data, variable_values=variables),
                 timeout=local_timeout,
             ):
                 yield result
     except Exception as e:
-        print("got exception in graphql_subscription")
         raise e
 
 
@@ -206,10 +207,10 @@ async def load_mythic_schema(mythic: mythic_classes.Mythic) -> bool:
                 mythic.schema = schema
             return True
         except Exception as e:
-            logging.error(
+            mythic.logger.error(
                 f"[-] Found mythic_schema.graphql locally, but failed to read it:\n{str(e)}"
             )
-            logging.error(
+            mythic.logger.error(
                 "[-] Unable to verify GraphQL queries syntactically before executing"
             )
             return False
@@ -217,7 +218,7 @@ async def load_mythic_schema(mythic: mythic_classes.Mythic) -> bool:
         try:
             schema = await fetch_graphql_schema(mythic)
         except Exception as e:
-            logging.error(f"[-] Failed to contact Mythic and fetch schema:\n{str(e)}")
+            mythic.logger.error(f"[-] Failed to contact Mythic and fetch schema:\n{str(e)}")
             return False
         try:
             mythic.schema = schema
@@ -225,8 +226,8 @@ async def load_mythic_schema(mythic: mythic_classes.Mythic) -> bool:
                 f.write(schema)
             return True
         except Exception as e:
-            logging.error(f"[-] Failed to save Mythic schema to disk:\n{str(e)}")
-            logging.error(
+            mythic.logger.error(f"[-] Failed to save Mythic schema to disk:\n{str(e)}")
+            mythic.logger.error(
                 "[-] Unable to verify GraphQL queries syntactically before executing"
             )
             return False

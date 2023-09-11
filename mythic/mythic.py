@@ -54,7 +54,7 @@ async def login(
         log_format=log_format,
         schema=None,
     )
-    #logging.basicConfig(format="%(levelname)s:%(message)s", level=logging_level)
+    # logging.basicConfig(format="%(levelname)s:%(message)s", level=logging_level)
     if apitoken is None:
         url = f"{mythic.http}{mythic.server_ip}:{mythic.server_port}/auth"
         data = {
@@ -1245,7 +1245,8 @@ async def waitfor_for_task_output(
     final_output = b""
     for output in aggregated_output:
         final_output += base64.b64decode(output["response_text"])
-    subtaskIds = await get_all_subtask_ids(mythic=mythic, task_display_id=task_display_id, fetch_display_id_instead=True)
+    subtaskIds = await get_all_subtask_ids(mythic=mythic, task_display_id=task_display_id,
+                                           fetch_display_id_instead=True)
     for subtask in subtaskIds:
         subtaskOutput = await get_all_task_output_by_id(mythic=mythic, task_display_id=subtask)
         for r in subtaskOutput:
@@ -1359,7 +1360,8 @@ async def get_all_task_and_subtask_output_by_id(
     initial = await mythic_utilities.graphql_post(
         mythic=mythic, query=query, variables={"task_display_id": task_display_id}
     )
-    subtaskIds = await get_all_subtask_ids(mythic=mythic, task_display_id=task_display_id, fetch_display_id_instead=True)
+    subtaskIds = await get_all_subtask_ids(mythic=mythic, task_display_id=task_display_id,
+                                           fetch_display_id_instead=True)
     for subtask in subtaskIds:
         subtaskOutput = await get_all_task_output_by_id(mythic=mythic, task_display_id=subtask)
         for r in subtaskOutput:
@@ -1406,7 +1408,6 @@ async def subscribe_new_task_output(
         except Exception as e:
             mythic.logger.error(e)
             return
-
 
 
 async def subscribe_all_task_output(
@@ -2569,6 +2570,7 @@ async def create_tag(mythic: mythic_classes.Mythic,
                      response_ids: List[int] = None,
                      task_ids: List[int] = None,
                      taskartifact_ids: List[int] = None) -> List[dict]:
+    # this will create a new instance of a tag for every id listed in every group
     def get_mutation(target_object: str) -> str:
         return f"""
             mutation createTag($tagtype_id: Int!, $source: String!, $url: String!, $data: jsonb!, ${target_object}: Int!) {{
@@ -2623,3 +2625,44 @@ async def create_tag(mythic: mythic_classes.Mythic,
             })
             output.append(resp)
     return output
+
+
+async def create_tag_for_multiple_objects(mythic: mythic_classes.Mythic,
+                                          tag_type_id: int,
+                                          source: str = "",
+                                          url: str = "",
+                                          data: str = "",
+                                          credential_id: int = None,
+                                          filemeta_id: int = None,
+                                          keylog_id: int = None,
+                                          mythictree_id: int = None,
+                                          response_id: int = None,
+                                          task_id: int = None,
+                                          taskartifact_id: int = None) -> dict:
+    # This will create a single tag instance and associate it with multiple objects within Mythic
+    add_tag_query = f"""
+        mutation createTag($tagtype_id: Int!, $source: String!, $url: String!, $data: jsonb!, $credential_id: Int, $filemeta_id: Int, $keylog_id: Int, $mythictree_id: Int, $response_id: Int, $task_id: Int, $taskartifact_id: Int) {{
+          insert_tag_one(object: {{data: $data, source: $source, tagtype_id: $tagtype_id, url: $url, credential_id: $credential_id, filemeta_id: $filemeta_id, keylog_id: $keylog_id, mythictree_id: $mythictree_id, response_id:$response_id, task_id:$task_id, taskartifact_id: $taskartifact_id }}) {{
+            id
+          }}
+        }}
+        """
+    return await mythic_utilities.graphql_post(mythic=mythic, query=add_tag_query, variables={
+        "tagtype_id": tag_type_id, "source": source, "url": url, "data": data, "credential_id": credential_id,
+        "filemeta_id": filemeta_id, "keylog_id": keylog_id, "mythictree_id": mythictree_id, "response_id": response_id,
+        "task_id": task_id, "taskartifact_id": taskartifact_id
+    })
+
+
+async def remove_tag(mythic: mythic_classes.Mythic, tag_id: int) -> dict:
+    # This deletes a tag from Mythic by its tag id (this doesn't remove the type of tag, just a single instance of a tag)
+    remove_tag_query = f"""
+    mutation removeTag($tag_id: Int!) {{
+        delete_tag_by_pk(id: $tag_id) {{
+        id
+        }}
+    }}
+    """
+    return await mythic_utilities.graphql_post(mythic=mythic, query=remove_tag_query, variables={
+        "tag_id": tag_id,
+    })

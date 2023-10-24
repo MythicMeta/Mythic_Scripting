@@ -26,8 +26,8 @@ get_apitokens = gql(
 )
 create_task = gql(
     """
-    mutation createTasking($callback_id: Int!, $command: String!, $params: String!, $token_id: Int, $tasking_location: String, $original_params: String, $parameter_group_name: String) {
-        createTask(callback_id: $callback_id, command: $command, params: $params, token_id: $token_id, tasking_location: $tasking_location, original_params: $original_params, parameter_group_name: $parameter_group_name) {
+    mutation createTasking($callback_id: Int!, $command: String!, $params: String!, $files: [String], $token_id: Int, $tasking_location: String, $original_params: String, $parameter_group_name: String, $is_interactive_task: Boolean, $interactive_task_type: Int, $parent_task_id: Int) {
+        createTask(callback_id: $callback_id, command: $command, params: $params, files: $files, token_id: $token_id, tasking_location: $tasking_location, original_params: $original_params, parameter_group_name: $parameter_group_name, is_interactive_task: $is_interactive_task, interactive_task_type: $interactive_task_type, parent_task_id: $parent_task_id) {
             status
             id
             display_id

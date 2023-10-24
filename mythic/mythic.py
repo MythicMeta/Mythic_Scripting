@@ -576,13 +576,18 @@ async def issue_task(
         token_id: int = None,
         wait_for_complete: bool = False,
         custom_return_attributes: str = None,
+        file_ids: [str] = None,
         timeout: int = None,
+        is_interactive_task: bool = False,
+        interactive_task_type: int = None,
+        parent_task_id: int = None,
 ) -> dict:
     """
     Create a new task within Mythic for a specific callback.
     `return_on_status` indicates if this command should return immediately, mythic_classes.MythicStatus.Preprocessing, or wait for a certain status before returning.
         This can be helpful if you want ot make sure a task is completed before continuing
     If you have files that you need to upload and leverage as part of your tasking, use the `register_file` function to get back a file_id.
+        Then supply those file ids in the `file_ids` array AND as their appropriate
     If you return immediately from this task, you'll get a dictionary with a status, error, and id field for your new task.
     If you return on another status, you can use your own custom attributes or use the defaults outlined in graphql_queries.task_fragment.
     """
@@ -597,7 +602,11 @@ async def issue_task(
             "command": command_name,
             "params": parameter_string,
             "token_id": token_id,
+            "is_interactive_task": is_interactive_task,
+            "interactive_task_type": interactive_task_type,
+            "parent_task_id": parent_task_id,
             "tasking_location": "command_line" if isinstance(parameters, str) else "scripting",
+            "files": file_ids,
         },
     )
     if submission_status["createTask"]["status"] == "success":

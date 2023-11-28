@@ -921,7 +921,8 @@ async def create_payload(
     The names of the build parameters page can be found on the Payloads page and clicking for "build information".
     commands is a list of the command names you want included in your payload. If you omit this, set it as None, or as an empty array ( [] ), then Mythic will automatically
         include all builtin and recommended commands for the OS you selected.
-    custom_return_attributes only applies when you're using `return_on_complete`. Otherwise, you get a dictionary with status, error, and uuid.
+    custom_return_attributes only applies when you're using `return_on_complete`.
+    Otherwise, you get a dictionary with status, error, and uuid.
     """
     create_payload_dict = {}
     create_payload_dict["selected_os"] = operating_system
@@ -2675,3 +2676,142 @@ async def remove_tag(mythic: mythic_classes.Mythic, tag_id: int) -> dict:
     return await mythic_utilities.graphql_post(mythic=mythic, query=remove_tag_query, variables={
         "tag_id": tag_id,
     })
+
+
+### INTROSPECTION QUERIES ###
+async def get_command_parameter_options(mythic: mythic_classes.Mythic, command_name: str, payload_type_name: str) -> str:
+    command_parameter_query = """
+    query filenameFileMetaUploadQuery($command_name: String!, $payload_type_name: String!) {
+        commandparameters(where: {command: {cmd: {_eq: $command_name}, payloadtype: {name: {_eq: $payload_type_name}}}}) {
+            choice_filter_by_command_attributes
+            choices
+            choices_are_all_commands
+            choices_are_loaded_commands
+            cli_name
+            default_value
+            dynamic_query_function
+            name
+            parameter_group_name
+            required
+            supported_agent_build_parameters
+            supported_agents
+            type
+            ui_position
+        }
+        command(where: {cmd: {_eq: $command_name}, payloadtype: {name: {_eq: $payload_type_name}}}) {
+            id
+        }
+    }
+"""
+    parameters = await mythic_utilities.graphql_post(mythic=mythic, query=command_parameter_query, variables={
+        "command_name": command_name,
+        "payload_type_name": payload_type_name
+    })
+    if len(parameters['command']) == 0:
+        return f"[-] Failed to find that command"
+    # get all the parameters
+    parameters = parameters["commandparameters"]
+    if len(parameters) == 0:
+        return f"[*] No parameters specified\n\tCalled via: {command_name}"
+    # get all the parameter groups in a set
+    groups = {x['parameter_group_name'] for x in parameters}
+    output = f"There are {len(groups)} ways to call this function:\n"
+    for group in groups:
+        output += f"Parameter Group: {group}\n"
+        group_parameters = [x for x in parameters if x["parameter_group_name"] == group]
+        example_call = {}
+        for param in group_parameters:
+            output += f"\tScripting Name: {param['cli_name']}\n"
+            output += f"\t\tRequired: {param['required']}\n"
+            output += f"\t\tParameter Type: {param['type']}\n"
+            if param['type'] == "String":
+                example_call[param['cli_name']] = param['default_value']
+            elif param['type'] == "ChooseOne" or param['type'] == "ChooseMultiple":
+                if param['dynamic_query_function'] != "":
+                    output += f"\t\t\tA function will be dynamically called to offer options for this command when the UI modal is displayed.\n"
+                if param['choices_are_all_commands']:
+                    output += f"\t\t\tThe choices for this are all commands for the agent (those built in and those not)\n"
+                if param["choices_are_loaded_commands"]:
+                    output += f"\t\t\tThe choices for this are all loaded commands for the callback\n"
+                if param["choice_filter_by_command_attributes"]:
+                    output += f"\t\t\tThe command options are further limited by certain attributes: {param['choices_filter_by_command_attributes']}\n"
+                try:
+                    if len(param['default_value']) > 0:
+                        parsed_default = json.loads(param['default_value'])
+                        example_call[param['cli_name']] = parsed_default
+                    else:
+                        example_call[param['cli_name']] = "" if param['type'] == 'ChooseOne' else []
+                except Exception:
+                    example_call[param['cli_name']] = "" if param['type'] == 'ChooseOne' else []
+                if len(param['choices']) > 0:
+                    output += f"\t\t\tThe available choices are: {param['choices']}\n"
+            elif param['type'] == "File":
+                output += "\t\t\tThe user will upload a file through the UI and get back a UUID, that UUID is supplied here.\n"
+                example_call[param['cli_name']] = "00000000-0000-0000-0000-000000000000"
+            elif param['type'] == "Boolean":
+                example_call[param['cli_name']] = False if param['default_value'] == "false" else True
+            elif param['type'] == "Number":
+                example_call[param['cli_name']] = param['default_value']
+            elif param['type'] == "Array":
+                example_call[param['cli_name']] = param['default_value']
+            elif param['type'] == "CredentialJson":
+                output += f"\t\t\tThis expects a dictionary of credential material\n"
+                example_call[param['cli_name']] = {
+                    "realm": "some realm",
+                    "credential": "the actual credential",
+                    "account": "some user",
+                    "type": "plaintext, hash, ticket, etc",
+                }
+            elif param['type'] == "PayloadList":
+                output += "\t\t\tThe UI will show a list of available payloads to select from and the resulting payload UUID will be supplied here.\n"
+                if len(param['supported_agents']) > 0:
+                    output += f"\t\t\tThis is limited to the following agents: {param['supported_agents']}\n"
+                if len(param['supported_agent_build_parameters']) > 0:
+                    output += f"\t\t\tThe available agents are further restricted by build parameters: {param['supported_agent_build_parameters']}\n"
+                example_call[param['cli_name']] = "00000000-0000-0000-0000-000000000000"
+            elif param['type'] == "AgentConnect":
+                output += f"\t\t\tThis will populate the UI with a modal to select an existing callback or payload to connect to that has a P2P C2 Profile.\n"
+                output += f"\t\t\tThis will have either 'agent_uuid' or 'callback_uuid' in it depending if you're linking to an existing callback or new payload.\n"
+                output += f"\t\t\tThis value consists of the host, uuid, and c2 profile information for the agent to make a connection.\n"
+                example_call[param['cli_name']] = {
+                    "host": "HOSTNAME of remote host",
+                    "agent_uuid": "00000000-0000-0000-0000-000000000000",
+                    "c2_profile": {
+                        "name": "poseidon_tcp",
+                        "parameters": {
+                            "AESPSK": {"crypto_type": "aes256_hmac",
+                                       "enc_key": "base64 blob",
+                                       "dec_key": "base64 blob"},
+                            "port": "8085",
+                            "killdate": "2024-09-06",
+                            "encrypted_exchange_check": "true"
+                        }
+                    }
+                }
+            elif param['type'] == "LinkInfo":
+                output += f"\t\t\tThis will populate the UI with a modal to select an existing P2P connection for this callback.\n"
+                output += f"\t\t\tThis value consists of the host, callback uuid, and c2 profile information for the agent to make a connection.\n"
+                example_call[param['cli_name']] = {
+                    "host": "HOSTNAME of remote host",
+                    "callback_uuid": "00000000-0000-0000-0000-000000000000",
+                    "c2_profile": {
+                        "name": "poseidon_tcp",
+                        "parameters": {
+                            "AESPSK": {"crypto_type": "aes256_hmac",
+                                       "enc_key": "base64 blob",
+                                       "dec_key": "base64 blob"},
+                            "port": "8085",
+                            "killdate": "2024-09-06",
+                            "encrypted_exchange_check": "true"
+                        }
+                    }
+                }
+            elif param['type'] == "TypedArray":
+                output += f"\t\t\tThis is a nested array of data where the first part is a 'type' and the second part is the 'value'"
+                output += f"\t\t\tAvailable type choices are: {param['choices']}"
+                if len(param['choices']) > 0:
+                    example_call[param['cli_name']] = [[param['choices'][0], '']]
+                else:
+                    example_call[param['cli_name']] = []
+        output += f"\tAn example call would look like:\n{json.dumps(example_call, indent=2, sort_keys=True)}\n"
+    return output

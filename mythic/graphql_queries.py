@@ -15,8 +15,8 @@ create_apitoken = gql(
 )
 get_apitokens = gql(
     """
-    query GetAPITokens {
-        apitokens(where: {active: {_eq: true}}) {
+    query GetAPITokens($username: String!) {
+        apitokens(where: {active: {_eq: true}, operator: {username: {_eq: $username}}, deleted: {_eq: false}}) {
             token_value
             active
             id

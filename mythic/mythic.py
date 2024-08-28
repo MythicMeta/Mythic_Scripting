@@ -77,7 +77,7 @@ async def login(
                 response["user"]["current_operation_id"] if "user" in response else 0
             )
             current_tokens = await mythic_utilities.graphql_post(
-                mythic=mythic, gql_query=graphql_queries.get_apitokens
+                mythic=mythic, gql_query=graphql_queries.get_apitokens, variables={"username": mythic.username}
             )
             if "apitokens" in current_tokens and len(current_tokens["apitokens"]) > 0:
                 mythic.apitoken = current_tokens["apitokens"][0]["token_value"]

@@ -35,7 +35,7 @@ class Mythic:
         self.http = "http://" if not ssl else "https://"
         self.ws = "ws://" if not ssl else "wss://"
         self.global_timeout = global_timeout if global_timeout is not None else -1
-        self.scripting_version = "0.1.8"
+        self.scripting_version = "0.2.0"
         self.current_operation_id = 0
         self.schema = schema
         self.log_level = log_level

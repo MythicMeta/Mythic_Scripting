@@ -27,6 +27,10 @@ This will be the last version that supports the old mythic_rest interface. Start
 
 Version 0.1.0 of the `mythic` package supports version 3.0 of the Mythic project utilizing the new GraphQL endpoints.
 
+Version 0.1.8 of the `mythic` package is the last version for `Mythic v3.2`.
+
+Version 0.2.0 of the `mythic` package supports `Mythic 3.3`.
+
 # Information
 
 The Jupyter Notebook container within Mythic provides many examples on how to use the package. 

@@ -31,6 +31,8 @@ Version 0.1.8 of the `mythic` package is the last version for `Mythic v3.2`.
 
 Version 0.2.0 of the `mythic` package supports `Mythic 3.3`.
 
+Version 0.2.1 of the `mythic` package supports `Mythic 3.3` and adds operationName tracking to graphql queries.
+
 # Information
 
 The Jupyter Notebook container within Mythic provides many examples on how to use the package. 

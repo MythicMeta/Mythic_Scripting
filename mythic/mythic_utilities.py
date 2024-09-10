@@ -6,6 +6,7 @@ from time import time
 from typing import AsyncGenerator, TypeVar
 
 import aiohttp
+import graphql.language.ast
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 from gql.transport.websockets import WebsocketsTransport
@@ -132,6 +133,14 @@ async def http_get_chunked(
         raise e
 
 
+async def get_operation_name(graphql_data: graphql.language.ast.DocumentNode) -> str:
+    #print(graphql_data.to_dict())
+    if len(graphql_data.definitions) > 0:
+        #print(graphql_data.definitions[0].operation)
+        return graphql_data.definitions[0].name.value
+    return ""
+
+
 async def graphql_post(
     mythic: mythic_classes.Mythic,
     gql_query: gql = None,
@@ -142,13 +151,14 @@ async def graphql_post(
         query_data = gql(query) if query is not None else gql_query
         if query_data is None:
             raise Exception("No data or gql_data passed into graphql_post function")
+        operation_name = await get_operation_name(query_data)
         async with Client(
             transport=await get_http_transport(mythic=mythic),
             fetch_schema_from_transport=False,
             execute_timeout=None if mythic.global_timeout < 0 else mythic.global_timeout,
             schema=mythic.schema,
         ) as session:
-            result = await session.execute(query_data, variable_values=variables)
+            result = await session.execute(query_data, variable_values=variables, operation_name=operation_name)
             return result
     except Exception as e:
         raise e
@@ -171,6 +181,7 @@ async def graphql_subscription(
             raise Exception(
                 "No data or gql_data passed into graphql_subscription function"
             )
+        operation_name = await get_operation_name(query_data)
         async with Client(
             transport=await get_ws_transport(mythic=mythic),
             fetch_schema_from_transport=False,
@@ -178,7 +189,7 @@ async def graphql_subscription(
         ) as session:
             async for result in timeout_generator(
                 mythic=mythic,
-                it=session.subscribe(query_data, variable_values=variables),
+                it=session.subscribe(query_data, variable_values=variables, operation_name=operation_name),
                 timeout=local_timeout,
             ):
                 yield result

@@ -76,6 +76,10 @@ async def login(
             mythic.current_operation_id = (
                 response["user"]["current_operation_id"] if "user" in response else 0
             )
+            if mythic.current_operation_id == 0:
+                mythic.logger.warning(
+                    f"[*] No Current Operation Set! Many API Calls will FAIL!"
+                )
             current_tokens = await mythic_utilities.graphql_post(
                 mythic=mythic, gql_query=graphql_queries.get_apitokens, variables={"username": mythic.username}
             )

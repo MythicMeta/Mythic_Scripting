@@ -7,7 +7,7 @@ import asyncio
 
 import aiohttp
 
-from . import graphql_queries, mythic_classes, mythic_utilities
+from . import graphql_queries, mythic_classes, mythic_utilities, mythic_crypto
 
 """
 Logging error levels for logging_level with Mythic based on logging package
@@ -2683,7 +2683,8 @@ async def remove_tag(mythic: mythic_classes.Mythic, tag_id: int) -> dict:
 
 
 ### INTROSPECTION QUERIES ###
-async def get_command_parameter_options(mythic: mythic_classes.Mythic, command_name: str, payload_type_name: str) -> str:
+async def get_command_parameter_options(mythic: mythic_classes.Mythic, command_name: str,
+                                        payload_type_name: str) -> str:
     command_parameter_query = """
     query filenameFileMetaUploadQuery($command_name: String!, $payload_type_name: String!) {
         commandparameters(where: {command: {cmd: {_eq: $command_name}, payloadtype: {name: {_eq: $payload_type_name}}}}) {
@@ -2819,3 +2820,182 @@ async def get_command_parameter_options(mythic: mythic_classes.Mythic, command_n
                     example_call[param['cli_name']] = []
         output += f"\tAn example call would look like:\n{json.dumps(example_call, indent=2, sort_keys=True)}\n"
     return output
+
+
+### AGENT MESSAGE AND CRYPTO ###
+async def local_encrypt_agent_message(mythic: mythic_classes.Mythic,
+                                      agent_callback_id: str,
+                                      message: dict,
+                                      iv: bytes = None,
+                                      aes256_key: bytes = None,
+                                      include_uuid: bool = True,
+                                      base64_result: bool = True):
+    if aes256_key is None:
+        get_callback_query = f"""
+    query getCallbackByAgentID($agent_callback_id: String!) {{
+        callback(where: {{agent_callback_id: {{_eq: $agent_callback_id}}}}) {{
+            crypto_type
+            dec_key_base64
+            enc_key_base64 
+        }}
+    }}
+    """
+        callback_info = await mythic_utilities.graphql_post(mythic=mythic,
+                                                            query=get_callback_query,
+                                                            variables={"agent_callback_id": agent_callback_id})
+        if len(callback_info["callback"]) == 0:
+            raise Exception("Failed to find callback")
+        aes256_key = base64.b64decode(callback_info["callback"][0]["enc_key_base64"])
+    crypto_bytes = await mythic_crypto.encrypt_AES256(
+        data=json.dumps(message).encode(),
+        key=aes256_key,
+        iv=iv
+    )
+    if include_uuid:
+        crypto_bytes = agent_callback_id.encode() + crypto_bytes
+    if base64_result:
+        return base64.b64encode(crypto_bytes).decode()
+    return crypto_bytes
+
+
+async def local_decrypt_agent_message(mythic: mythic_classes.Mythic,
+                                      agent_callback_id: str,
+                                      message: bytes,
+                                      aes256_key: bytes = None,
+                                      message_includes_uuid: bool = True,
+                                      message_is_base64: bool = True) -> dict:
+    data_to_decrypt = message
+    if message_is_base64:
+        data_to_decrypt = base64.b64decode(message.decode())
+    if message_includes_uuid:
+        data_to_decrypt = data_to_decrypt[36:]
+    if aes256_key is None:
+        get_callback_query = f"""
+    query getCallbackByAgentID($agent_callback_id: String!) {{
+        callback(where: {{agent_callback_id: {{_eq: $agent_callback_id}}}}) {{
+            crypto_type
+            dec_key_base64
+            enc_key_base64 
+        }}
+    }}
+    """
+        callback_info = await mythic_utilities.graphql_post(mythic=mythic,
+                                                            query=get_callback_query,
+                                                            variables={"agent_callback_id": agent_callback_id})
+        if len(callback_info["callback"]) == 0:
+            raise Exception("Failed to find callback")
+        aes256_key = base64.b64decode(callback_info["callback"][0]["dec_key_base64"])
+    decrypted = await mythic_crypto.decrypt_AES256(
+        data=data_to_decrypt,
+        key=aes256_key
+    )
+    return json.loads(decrypted)
+
+
+async def send_callback_agent_message_dict(mythic: mythic_classes.Mythic,
+                                           c2_profile: str,
+                                           agent_callback_id: str,
+                                           message: dict,
+                                           ):
+    get_callback_query = f"""
+    query getCallbackByAgentID($agent_callback_id: String!) {{
+        callback(where: {{agent_callback_id: {{_eq: $agent_callback_id}}}}) {{
+            crypto_type
+            dec_key_base64
+            enc_key_base64 
+        }}
+    }}
+    """
+    callback_info = await mythic_utilities.graphql_post(mythic=mythic,
+                                                        query=get_callback_query,
+                                                        variables={"agent_callback_id": agent_callback_id})
+    if len(callback_info["callback"]) == 0:
+        raise Exception("Failed to find callback")
+    if callback_info["callback"][0]["crypto_type"] == "none":
+        message_to_send = agent_callback_id + json.dumps(message)
+    elif callback_info["callback"][0]["crypto_type"] == "aes256_hmac":
+        # we need to encrypt first
+        message_to_send = await local_encrypt_agent_message(
+            mythic=mythic,
+            agent_callback_id=agent_callback_id,
+            message=message,
+            iv=None,
+            aes256_key=base64.b64decode(callback_info["callback"][0]["enc_key_base64"]),
+            include_uuid=True,
+            base64_result=True
+        )
+    else:
+        raise Exception("Unknown crypto type for sending agent message")
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f"{mythic.http}{mythic.server_ip}:{mythic.server_port}/agent_message/",
+                data=message_to_send,
+                headers={"mythic": c2_profile}, ssl=False
+        ) as resp:
+            if resp.status == 404:
+                raise Exception("Mythic reject the message, check Mythic notifications")
+            response_body = await resp.text()
+            if callback_info["callback"][0]["crypto_type"] == "none":
+                response = base64.b64decode(response_body)
+                response = response[:36]
+                return json.loads(response)
+            elif callback_info["callback"][0]["crypto_type"] == "aes256_hmac":
+                # we need to encrypt first
+                decrypted_message = await local_decrypt_agent_message(
+                    mythic=mythic,
+                    message=response_body.encode(),
+                    aes256_key=base64.b64decode(callback_info["callback"][0]["dec_key_base64"]),
+                    message_includes_uuid=True,
+                    message_is_base64=True
+                )
+                return decrypted_message
+            else:
+                raise Exception("Unknown crypto type for sending agent message")
+
+
+async def send_callback_agent_message_base64(mythic: mythic_classes.Mythic,
+                                             c2_profile: str,
+                                             agent_callback_id: str,
+                                             message: str,
+                                             decrypt_response: bool = True):
+    get_callback_query = f"""
+    query getCallbackByAgentID($agent_callback_id: String!) {{
+        callback(where: {{agent_callback_id: {{_eq: $agent_callback_id}}}}) {{
+            crypto_type
+            dec_key_base64
+            enc_key_base64 
+        }}
+    }}
+    """
+    callback_info = await mythic_utilities.graphql_post(mythic=mythic,
+                                                        query=get_callback_query,
+                                                        variables={"agent_callback_id": agent_callback_id})
+    if len(callback_info["callback"]) == 0:
+        raise Exception("Failed to find callback")
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f"{mythic.http}{mythic.server_ip}:{mythic.server_port}/agent_message/",
+                data=message,
+                headers={"mythic": c2_profile}, ssl=False
+        ) as resp:
+            if resp.status == 404:
+                raise Exception("Mythic rejected the message, check Mythic notifications")
+            response_body = await resp.text()
+            if decrypt_response:
+                if callback_info["callback"][0]["crypto_type"] == "none":
+                    response = base64.b64decode(response_body)
+                    response = response[:36]
+                    return json.loads(response)
+                elif callback_info["callback"][0]["crypto_type"] == "aes256_hmac":
+                    # we need to encrypt first
+                    decrypted_message = await local_decrypt_agent_message(
+                        mythic=mythic,
+                        message=response_body.encode(),
+                        aes256_key=base64.b64decode(callback_info["callback"][0]["dec_key_base64"]),
+                        message_includes_uuid=True,
+                        message_is_base64=True
+                    )
+                    return decrypted_message
+                else:
+                    raise Exception("Unknown crypto type for decrypting agent message")
+            return response_body

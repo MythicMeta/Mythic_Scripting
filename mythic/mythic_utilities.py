@@ -136,7 +136,7 @@ async def http_get_chunked(
 async def get_operation_name(graphql_data: graphql.language.ast.DocumentNode) -> str:
     #print(graphql_data.to_dict())
     if len(graphql_data.definitions) > 0:
-        #print(graphql_data.definitions[0].operation)
+        #print(graphql_data.definitions[0].name.value)
         return graphql_data.definitions[0].name.value
     return ""
 

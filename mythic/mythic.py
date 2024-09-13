@@ -2943,6 +2943,7 @@ async def send_callback_agent_message_dict(mythic: mythic_classes.Mythic,
                 # we need to encrypt first
                 decrypted_message = await local_decrypt_agent_message(
                     mythic=mythic,
+                    agent_callback_id=agent_callback_id,
                     message=response_body.encode(),
                     aes256_key=base64.b64decode(callback_info["callback"][0]["dec_key_base64"]),
                     message_includes_uuid=True,

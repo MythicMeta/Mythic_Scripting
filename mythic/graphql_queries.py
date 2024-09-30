@@ -161,12 +161,14 @@ create_operator_fragment = """
         status
         username
         view_utc_time
+        account_type
+        email
     }
 """
 create_operator = gql(
     f"""
-    mutation NewOperator($username: String!, $password: String!) {{
-        createOperator(input: {{password: $password, username: $username}}) {{
+    mutation NewOperator($username: String!, $password: String!, $email: String, $bot: Boolean) {{
+        createOperator(input: {{password: $password, username: $username, email: $email, bot: $bot}}) {{
             ...create_operator_fragment
         }}
     }}

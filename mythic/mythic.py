@@ -1463,6 +1463,8 @@ async def create_operator(
         mythic: mythic_classes.Mythic,
         username: str,
         password: str,
+        email: str = None,
+        bot: bool = False,
 ) -> dict:
     """
     Create a new operator within Mythic with the specified username and password.
@@ -1472,28 +1474,34 @@ async def create_operator(
     return await mythic_utilities.graphql_post(
         mythic=mythic,
         gql_query=graphql_queries.create_operator,
-        variables={"username": username, "password": password},
+        variables={"username": username, "password": password, "email": email, "bot": bot},
     )
 
 
-async def create_apitoken(mythic: mythic_classes.Mythic) -> str:
+async def create_apitoken(mythic: mythic_classes.Mythic,
+                          operator_id: int = None,
+                          name: str = None) -> str:
     """
     Create a new API token for the currently logged in user. If there was an issue in creation, this will raise an exception.
     """
     create_apitoken_mutation = """
-    mutation createAPITokenMutation{
-        createAPIToken(token_type: "User"){
+    mutation createAPITokenMutation($operator_id: Int, $name: String){
+        createAPIToken(token_type: "User", operator_id: $operator_id, name: $name){
             id
             token_value
             status
             error
+            operator_id
+            name
+            created_by
+            token_type
         }
     }
     """
     token = await mythic_utilities.graphql_post(
         mythic=mythic,
         query=create_apitoken_mutation,
-        variables=None,
+        variables={"operator_id": operator_id, "name": name},
     )
     if token["createAPIToken"]["status"] == "error":
         raise Exception(
@@ -1503,37 +1511,59 @@ async def create_apitoken(mythic: mythic_classes.Mythic) -> str:
 
 
 async def set_admin_status(mythic: mythic_classes.Mythic, username: str, admin: bool) -> dict:
-    resp = await execute_custom_query(
+    operator_info = await execute_custom_query(
         mythic=mythic,
         query="""
-        mutation updateOperatorAdminStatus($username: String!, $admin: Boolean){
-            update_operator(_set: {admin: $admin}, where: {username: {_eq: $username}}){
-                returning {
-                    id
-                    admin
-                }
+        query getUserID($username: String!){
+            operator(where: {username: {_eq: $username}}){
+                id
             }
         }
         """,
-        variables={"username": username, "admin": admin},
+        variables={"username": username}
+    )
+    if len(operator_info["operator"]) != 1:
+        raise Exception("Failed to find operator by that name")
+    resp = await execute_custom_query(
+        mythic=mythic,
+        query="""
+        mutation updateOperatorAdminStatus($operator_id: Int!, $admin: Boolean){
+            updateOperatorStatus(operator_id: $operator_id, admin: $admin){
+                id
+                admin
+            }
+        }
+        """,
+        variables={"operator_id": operator_info["operator"][0]["id"], "admin": admin},
     )
     return resp
 
 
 async def set_active_status(mythic: mythic_classes.Mythic, username: str, active: bool) -> dict:
-    resp = await execute_custom_query(
+    operator_info = await execute_custom_query(
         mythic=mythic,
         query="""
-        mutation updateOperatorActiveStatus($username: String!, $active: Boolean){
-            update_operator(_set: {active: $active}, where: {username: {_eq: $username}}){
-                returning {
-                    id
-                    active
-                }
+        query getUserID($username: String!){
+            operator(where: {username: {_eq: $username}}){
+                id
             }
         }
         """,
-        variables={"username": username, "admin": active},
+        variables={"username": username}
+    )
+    if len(operator_info["operator"]) != 1:
+        raise Exception("Failed to find operator by that name")
+    resp = await execute_custom_query(
+        mythic=mythic,
+        query="""
+        mutation updateOperatorActiveStatus($operator_id: Int!, $active: Boolean){
+            updateOperatorStatus(operator_id: $operator_id, active: $active){
+                id
+                admin
+            }
+        }
+        """,
+        variables={"operator_id": operator_info["operator"][0]["id"], "active": active},
     )
     return resp
 
@@ -1558,7 +1588,7 @@ async def set_password(mythic: mythic_classes.Mythic, username: str, new_passwor
         mythic=mythic,
         query="""
         mutation updateOperatorPassword($user_id: Int!, $new_password: String!, $old_password: String){
-            updatePassword(user_id: $user_id, new_password: $new_password, old_password: $old_password){
+            updatePasswordAndEmail(user_id: $user_id, new_password: $new_password, old_password: $old_password){
                 status
                 error
             }

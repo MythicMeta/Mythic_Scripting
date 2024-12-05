@@ -1850,7 +1850,7 @@ async def get_latest_uploaded_file_by_name(
     {graphql_queries.file_data_fragment if custom_return_attributes is None else ''}
     """
     output = await mythic_utilities.graphql_post(
-        mythic=mythic, query=file_query,
+        mythic=mythic, query=file_query, variables={"filename": filename}
     )
     return output["filemeta"][0] if output["filemeta"] else {}
 

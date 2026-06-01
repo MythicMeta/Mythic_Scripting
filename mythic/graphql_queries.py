@@ -2,32 +2,25 @@ from gql import gql
 
 create_apitoken = gql(
     """
-    mutation createAPITokenMutation{
-        createAPIToken(token_type: "User"){
+    mutation createAPITokenMutation($operator_id: Int, $name: String, $scopes: [String!]){
+        createAPIToken(operator_id: $operator_id, name: $name, scopes: $scopes){
             id
             token_value
             status
             error
             operator_id
-        }
-    }
-    """
-)
-get_apitokens = gql(
-    """
-    query GetAPITokens($username: String!) {
-        apitokens(where: {active: {_eq: true}, operator: {username: {_eq: $username}}, deleted: {_eq: false}}) {
-            token_value
-            active
-            id
+            name
+            created_by
+            token_type
+            scopes
         }
     }
     """
 )
 create_task = gql(
     """
-    mutation createTasking($callback_id: Int!, $command: String!, $params: String!, $files: [String], $token_id: Int, $tasking_location: String, $original_params: String, $parameter_group_name: String, $is_interactive_task: Boolean, $interactive_task_type: Int, $parent_task_id: Int, $payload_type: String) {
-        createTask(callback_id: $callback_id, command: $command, params: $params, files: $files, token_id: $token_id, tasking_location: $tasking_location, original_params: $original_params, parameter_group_name: $parameter_group_name, is_interactive_task: $is_interactive_task, interactive_task_type: $interactive_task_type, parent_task_id: $parent_task_id, payload_type: $payload_type) {
+    mutation createTasking($callback_display_id: Int!, $command: String!, $params: String!, $files: [String], $token_id: Int, $tasking_location: String, $original_params: String, $parameter_group_name: String, $is_interactive_task: Boolean, $interactive_task_type: Int, $parent_task_id: Int, $payload_type: String) {
+        createTask(callback_display_id: $callback_display_id, command: $command, params: $params, files: $files, token_id: $token_id, tasking_location: $tasking_location, original_params: $original_params, parameter_group_name: $parameter_group_name, is_interactive_task: $is_interactive_task, interactive_task_type: $interactive_task_type, parent_task_id: $parent_task_id, payload_type: $payload_type) {
             status
             id
             display_id
@@ -211,19 +204,19 @@ get_operation_and_operator_by_name = gql(
     """
 )
 add_operator_to_operation_fragment = """
-    fragment add_operator_to_operation_fragment on updateOperatorOperation{
+    fragment add_operator_to_operation_fragment on updateOperatorOperationOutput{
         status
         error
     }
 """
 remove_operator_from_operation_fragment = """
-    fragment remove_operator_from_operation_fragment on updateOperatorOperation{
+    fragment remove_operator_from_operation_fragment on updateOperatorOperationOutput{
         status
         error
     }
 """
 update_operator_in_operation_fragment = """
-    fragment update_operator_in_operation_fragment on updateOperatorOperation{
+    fragment update_operator_in_operation_fragment on updateOperatorOperationOutput{
         status
         error
     }

@@ -53,7 +53,7 @@ async def timeout_generator(
 def get_headers(mythic: mythic_classes.Mythic) -> dict:
     headers = {}
     if mythic.apitoken is not None:
-        headers["apitoken"] = mythic.apitoken
+        headers["Authorization"] = f"Bearer {mythic.apitoken}"
     elif mythic.access_token is not None:
         headers["Authorization"] = f"Bearer {mythic.access_token}"
     return headers
@@ -133,15 +133,6 @@ async def http_get_chunked(
     except Exception as e:
         raise e
 
-
-async def get_operation_name(graphql_data: graphql.language.ast.DocumentNode) -> str:
-    #print(graphql_data.to_dict())
-    if len(graphql_data.definitions) > 0:
-        #print(graphql_data.definitions[0].name.value)
-        return graphql_data.definitions[0].name.value
-    return ""
-
-
 async def graphql_post(
     mythic: mythic_classes.Mythic,
     gql_query: gql = None,
@@ -152,14 +143,13 @@ async def graphql_post(
         query_data = gql(query) if query is not None else gql_query
         if query_data is None:
             raise Exception("No data or gql_data passed into graphql_post function")
-        operation_name = await get_operation_name(query_data)
         async with Client(
             transport=await get_http_transport(mythic=mythic),
             fetch_schema_from_transport=False,
             execute_timeout=None if mythic.global_timeout < 0 else mythic.global_timeout,
             schema=mythic.schema,
         ) as session:
-            result = await session.execute(query_data, variable_values=variables, operation_name=operation_name)
+            result = await session.execute(query_data, variable_values=variables)
             return result
     except Exception as e:
         raise e
@@ -182,7 +172,6 @@ async def graphql_subscription(
             raise Exception(
                 "No data or gql_data passed into graphql_subscription function"
             )
-        operation_name = await get_operation_name(query_data)
         async with Client(
             transport=await get_ws_transport(mythic=mythic),
             fetch_schema_from_transport=False,
@@ -190,7 +179,7 @@ async def graphql_subscription(
         ) as session:
             async for result in timeout_generator(
                 mythic=mythic,
-                it=session.subscribe(query_data, variable_values=variables, operation_name=operation_name),
+                it=session.subscribe(query_data, variable_values=variables),
                 timeout=local_timeout,
             ):
                 yield result

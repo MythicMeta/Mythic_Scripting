@@ -21,6 +21,7 @@ class Mythic:
         server_port: int = None,
         global_timeout: int = None,
         schema: str = None,
+        create_apitoken: bool = False,
         log_level: int = logging.WARNING,
         log_format: str = LOG_FORMAT,
     ):
@@ -38,6 +39,7 @@ class Mythic:
         self.scripting_version = "0.2.8"
         self.current_operation_id = 0
         self.schema = schema
+        self.create_apitoken = create_apitoken
         self.log_level = log_level
         self.log_handler = logging.StreamHandler(sys.stdout)
         self.logger = logging.getLogger("mythic")
@@ -58,6 +60,7 @@ class Mythic:
                 "server_port": self.server_port,
                 "ssl": self.ssl,
                 "current_operation_id": self.current_operation_id,
+                "create_apitoken": self.create_apitoken,
             },
             indent=4,
         )

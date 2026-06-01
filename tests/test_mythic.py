@@ -15,7 +15,8 @@ async def test_log_in(valid_no_login_mythic_instance):
         server_ip=valid_no_login_mythic_instance.server_ip,
         server_port=valid_no_login_mythic_instance.server_port,
     )
-    assert mythic_instance.apitoken is not None
+    assert mythic_instance.access_token is not None
+    assert mythic_instance.apitoken is None
 
 
 async def test_get_me(authenticated_valid_mythic_instance):

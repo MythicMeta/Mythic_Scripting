@@ -5,3 +5,4 @@ mythic/.DS_Store
 mythic/__pycache__/
 mythic_schema.graphql
 example.py
+.idea/

@@ -110,6 +110,19 @@ async def login(
             raise e
     else:
         try:
+            response = await execute_custom_query(mythic=mythic, query="""
+            query whoami {
+                whoami {
+                    status
+                    username
+                    current_operation_id
+                }
+            }""")
+            if response["whoami"]["status"] != "success":
+                mythic.logger.error(f"[-] Failed to authenticate to Mythic: {response['whoami']['error']}")
+                raise Exception(response['whoami']['error'])
+            mythic.current_operation_id = response["whoami"]["current_operation_id"]
+            mythic.username = response["whoami"]["username"]
             return mythic
         except Exception as e:
             mythic.logger.error(f"[-] Failed to authenticate to Mythic: {str(e)}")
@@ -589,7 +602,7 @@ async def issue_task(
         timeout: int = None,
         is_interactive_task: bool = False,
         interactive_task_type: int = None,
-        parent_task_id: int = None,
+        parent_task_display_id: int = None,
         payload_type: str = None,
 ) -> dict:
     """
@@ -614,7 +627,7 @@ async def issue_task(
             "token_id": token_id,
             "is_interactive_task": is_interactive_task,
             "interactive_task_type": interactive_task_type,
-            "parent_task_id": parent_task_id,
+            "parent_task_display_id": parent_task_display_id,
             "tasking_location": "command_line" if isinstance(parameters, str) else "scripting",
             "files": file_ids,
             "payload_type": payload_type
@@ -689,9 +702,9 @@ async def issue_task_all_active_callbacks(
         "status": either "success" or "error",
         "error": empty if this was successful, otherwise it'll have an error message,
         "id": null if the task wasn't created, otherwise the new ID for your task,
-        "callback_id": the id of the callback this was issued to
+        "callback_display_id": the display id of the callback this was issued to
     }
-    The callback_id piece is added in manually by this function so that you can track which callbacks actually created tasks or not
+    The callback_display_id piece is added in manually by this function so that you can track which callbacks actually created tasks or not
     """
     created_tasks = []
     all_active_callbacks_query = """
@@ -2605,15 +2618,18 @@ async def create_tag(mythic: mythic_classes.Mythic,
                      keylog_ids: List[int] = None,
                      mythictree_ids: List[int] = None,
                      response_ids: List[int] = None,
-                     task_ids: List[int] = None,
+                     task_display_ids: List[int] = None,
+                     payload_ids: List[int] = None,
+                     callback_display_ids: List[int] = None,
                      taskartifact_ids: List[int] = None) -> List[dict]:
     # this will create a new instance of a tag for every id listed in every group
     def get_mutation(target_object: str) -> str:
         return f"""
-            mutation createTag($tagtype_id: Int!, $source: String!, $url: String!, $data: jsonb!, ${target_object}: Int!) {{
-              insert_tag_one(object: {{data: $data, source: $source, tagtype_id: $tagtype_id, url: $url, {target_object}:${target_object}}}) {{
+            mutation createTag($tagtype_id: Int!, $source: String, $url: String, $data: jsonb, ${target_object}: Int!) {{
+              createTag(tagtype_id: $tagtype_id, data: $data, source: $source, url: $url, {target_object}: ${target_object}) {{
+                status
+                error
                 id
-                {target_object}
               }}
             }}
             """
@@ -2649,10 +2665,22 @@ async def create_tag(mythic: mythic_classes.Mythic,
                 "tagtype_id": tag_type_id, "source": source, "url": url, "data": data, "response_id": target_id
             })
             output.append(resp)
-    if task_ids is not None:
-        for target_id in task_ids:
-            resp = await mythic_utilities.graphql_post(mythic=mythic, query=get_mutation("task_id"), variables={
-                "tagtype_id": tag_type_id, "source": source, "url": url, "data": data, "task_id": target_id
+    if task_display_ids is not None:
+        for target_id in task_display_ids:
+            resp = await mythic_utilities.graphql_post(mythic=mythic, query=get_mutation("task_display_id"), variables={
+                "tagtype_id": tag_type_id, "source": source, "url": url, "data": data, "task_display_id": target_id
+            })
+            output.append(resp)
+    if payload_ids is not None:
+        for target_id in payload_ids:
+            resp = await mythic_utilities.graphql_post(mythic=mythic, query=get_mutation("payload_id"), variables={
+                "tagtype_id": tag_type_id, "source": source, "url": url, "data": data, "payload_id": target_id
+            })
+            output.append(resp)
+    if callback_display_ids is not None:
+        for target_id in callback_display_ids:
+            resp = await mythic_utilities.graphql_post(mythic=mythic, query=get_mutation("callback_display_id"), variables={
+                "tagtype_id": tag_type_id, "source": source, "url": url, "data": data, "callback_display_id": target_id
             })
             output.append(resp)
     if taskartifact_ids is not None:
@@ -2674,20 +2702,25 @@ async def create_tag_for_multiple_objects(mythic: mythic_classes.Mythic,
                                           keylog_id: int = None,
                                           mythictree_id: int = None,
                                           response_id: int = None,
-                                          task_id: int = None,
+                                          task_display_id: int = None,
+                                          payload_id: int = None,
+                                          callback_display_id: int = None,
                                           taskartifact_id: int = None) -> dict:
     # This will create a single tag instance and associate it with multiple objects within Mythic
-    add_tag_query = f"""
-        mutation createTag($tagtype_id: Int!, $source: String!, $url: String!, $data: jsonb!, $credential_id: Int, $filemeta_id: Int, $keylog_id: Int, $mythictree_id: Int, $response_id: Int, $task_id: Int, $taskartifact_id: Int) {{
-          insert_tag_one(object: {{data: $data, source: $source, tagtype_id: $tagtype_id, url: $url, credential_id: $credential_id, filemeta_id: $filemeta_id, keylog_id: $keylog_id, mythictree_id: $mythictree_id, response_id:$response_id, task_id:$task_id, taskartifact_id: $taskartifact_id }}) {{
+    add_tag_query = """
+        mutation createTag($tagtype_id: Int!, $source: String, $url: String, $data: jsonb, $credential_id: Int, $filemeta_id: Int, $keylog_id: Int, $mythictree_id: Int, $response_id: Int, $task_display_id: Int, $payload_id: Int, $callback_display_id: Int, $taskartifact_id: Int) {
+          createTag(tagtype_id: $tagtype_id, data: $data, source: $source, url: $url, credential_id: $credential_id, filemeta_id: $filemeta_id, keylog_id: $keylog_id, mythictree_id: $mythictree_id, response_id: $response_id, task_display_id: $task_display_id, payload_id: $payload_id, callback_display_id: $callback_display_id, taskartifact_id: $taskartifact_id) {
+            status
+            error
             id
-          }}
-        }}
+          }
+        }
         """
     return await mythic_utilities.graphql_post(mythic=mythic, query=add_tag_query, variables={
         "tagtype_id": tag_type_id, "source": source, "url": url, "data": data, "credential_id": credential_id,
         "filemeta_id": filemeta_id, "keylog_id": keylog_id, "mythictree_id": mythictree_id, "response_id": response_id,
-        "task_id": task_id, "taskartifact_id": taskartifact_id
+        "task_display_id": task_display_id, "payload_id": payload_id, "callback_display_id": callback_display_id,
+        "taskartifact_id": taskartifact_id
     })
 
 

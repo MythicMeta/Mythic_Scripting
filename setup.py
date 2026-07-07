@@ -25,6 +25,6 @@ setup(
     ],
     packages=["mythic"],
     include_package_data=True,
-    install_requires=["aiohttp", "asyncio", "gql[aiohttp,websockets]==3.5.3", "pycryptodome"],
+    install_requires=["aiohttp", "gql[aiohttp,websockets]==3.5.3", "pycryptodome"],
     entry_points={},
 )

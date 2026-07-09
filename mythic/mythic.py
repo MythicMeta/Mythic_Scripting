@@ -1600,7 +1600,7 @@ async def set_password(mythic: mythic_classes.Mythic, username: str, new_passwor
         """,
         variables={"user_id": resp["operator"][0]["id"], "new_password": new_password, "old_password": old_password},
     )
-    return response["updatePassword"]
+    return response["updatePasswordAndEmail"]
 
 
 async def get_operator(mythic: mythic_classes.Mythic, username: str, custom_return_attributes: str = None) -> dict:
@@ -1624,11 +1624,28 @@ async def get_me(mythic: mythic_classes.Mythic) -> dict:
         mythic=mythic,
         query=f"""
         query getMe {{
-            meHook{{
+            whoami{{
                 status
                 error
+                user_id
+                username
+                email
+                account_type
+                admin
+                active
+                deleted
                 current_operation_id
                 current_operation
+                view_mode
+                last_login
+                current_utc_time
+                auth_method
+                apitoken
+                eventstepinstance_id
+                scopes
+                effective_scopes
+                operations
+                scope_info
             }}
         }}
         """,
@@ -1648,7 +1665,7 @@ async def register_file(
     """
     form = aiohttp.FormData()
     form.add_field("file", value=contents, filename=filename)
-    url = f"{mythic.http}{mythic.server_ip}:{mythic.server_port}/api/v1.4/task_upload_file_webhook"
+    url = f"{mythic.http}{mythic.server_ip}:{mythic.server_port}/task_upload_file_webhook"
     response = await mythic_utilities.http_post_form(mythic=mythic, data=form, url=url)
     if response["status"] == "success":
         return response["agent_file_id"]

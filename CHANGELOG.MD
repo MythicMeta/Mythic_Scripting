@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0-rc5] - 2026-07-09
+
+### Fixed
+
+- Updated `get_me` to call the current `whoami` Hasura action instead of the removed `meHook` field.
+- Fixed `set_password` to return the `updatePasswordAndEmail` action response.
+- Updated `register_file` to post to the current `/task_upload_file_webhook` route.
+
+### Changed
+
+- Documented the `file.write` scope needed by `register_file` when using scoped API tokens.
+
 ## [0.3.0-rc1] - 2026-06-01
 
 ### Changed

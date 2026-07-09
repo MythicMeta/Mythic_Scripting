@@ -33,7 +33,11 @@ Version 0.2.0 of the `mythic` package supports `Mythic 3.3`.
 
 Version 0.2.1 of the `mythic` package supports `Mythic 3.3` and adds operationName tracking to graphql queries.
 
+Version 0.3.0-rc5 of the `mythic` package tracks the current Mythic 3.4.x Hasura action API, including the `whoami` action, `updatePasswordAndEmail`, and the unversioned task upload route.
+
 # Information
 
 The Jupyter Notebook container within Mythic provides many examples on how to use the package. 
 The `mythic` package leverages async HTTP requests and WebSocket connections, so it's important to make sure your codebase is running asynchronously. 
+
+When using scoped API tokens, the token must include the scopes required by the Mythic route or Hasura operation being called. For example, `register_file` uploads to `/task_upload_file_webhook`, which requires `file.write`; tokens created with `login(create_apitoken=True)` request `*`.

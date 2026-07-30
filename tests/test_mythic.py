@@ -75,6 +75,98 @@ async def test_register_file_uses_current_upload_route(monkeypatch):
     assert captured["url"] == "https://127.0.0.1:7443/task_upload_file_webhook"
 
 
+async def test_get_command_parameter_options_groups_and_orders_parameters(monkeypatch):
+    captured = {}
+
+    async def fake_graphql_post(mythic, query, variables):
+        captured["query"] = query
+        captured["variables"] = variables
+        return {
+            "command": [{"id": 7}],
+            "commandparameters": [
+                {
+                    "id": 3,
+                    "name": "credential",
+                    "parameter_group_name": "Default",
+                    "type": "CredentialJson",
+                    "ui_position": 2,
+                },
+                {
+                    "id": 4,
+                    "name": "edge",
+                    "parameter_group_name": "Remove",
+                    "type": "LinkInfo",
+                    "ui_position": 1,
+                },
+                {
+                    "id": 2,
+                    "name": "connection",
+                    "parameter_group_name": "Default",
+                    "type": "AgentConnect",
+                    "ui_position": 1,
+                },
+                {
+                    "id": 1,
+                    "name": "note",
+                    "parameter_group_name": "Default",
+                    "type": "String",
+                    "ui_position": 1,
+                },
+            ],
+        }
+
+    monkeypatch.setattr(mythic.mythic_utilities, "graphql_post", fake_graphql_post)
+
+    result = await mythic.get_command_parameter_options(
+        mythic=mythic_classes.Mythic(),
+        payload_type_name="poseidon",
+        command_name="link",
+    )
+
+    assert captured["variables"] == {
+        "command_name": "link",
+        "payload_type_name": "poseidon",
+    }
+    assert "deleted: {_eq: false}" in captured["query"]
+    assert "limit_credentials_by_type" in captured["query"]
+    assert list(result) == ["Default", "Remove"]
+    assert [parameter["id"] for parameter in result["Default"]] == [1, 2, 3]
+    assert "LLM_Help" not in result["Default"][0]
+    assert "@link:callback=" in result["Default"][1]["LLM_Help"]
+    assert "@link:payload=" in result["Default"][1]["LLM_Help"]
+    assert "@cred:<credential_id>" in result["Default"][2]["LLM_Help"]
+    assert "@link:edge=" in result["Remove"][0]["LLM_Help"]
+
+
+async def test_get_command_parameter_options_handles_parameterless_command(monkeypatch):
+    async def fake_graphql_post(mythic, query, variables):
+        return {"command": [{"id": 7}], "commandparameters": []}
+
+    monkeypatch.setattr(mythic.mythic_utilities, "graphql_post", fake_graphql_post)
+
+    result = await mythic.get_command_parameter_options(
+        mythic=mythic_classes.Mythic(),
+        payload_type_name="poseidon",
+        command_name="exit",
+    )
+
+    assert result == {"Default": []}
+
+
+async def test_get_command_parameter_options_rejects_unknown_command(monkeypatch):
+    async def fake_graphql_post(mythic, query, variables):
+        return {"command": [], "commandparameters": []}
+
+    monkeypatch.setattr(mythic.mythic_utilities, "graphql_post", fake_graphql_post)
+
+    with pytest.raises(Exception, match="missing.*poseidon"):
+        await mythic.get_command_parameter_options(
+            mythic=mythic_classes.Mythic(),
+            payload_type_name="poseidon",
+            command_name="missing",
+        )
+
+
 @pytest.mark.slow
 async def test_connect_error():
     with pytest.raises(ClientConnectionError):

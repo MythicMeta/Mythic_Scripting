@@ -2888,7 +2888,7 @@ async def get_command_parameter_options(mythic: mythic_classes.Mythic, command_n
                 if param["choices_are_loaded_commands"]:
                     output += f"\t\t\tThe choices for this are all loaded commands for the callback\n"
                 if param["choice_filter_by_command_attributes"]:
-                    output += f"\t\t\tThe command options are further limited by certain attributes: {param['choices_filter_by_command_attributes']}\n"
+                    output += f"\t\t\tThe command options are further limited by certain attributes: {param['choice_filter_by_command_attributes']}\n"
                 try:
                     if len(param['default_value']) > 0:
                         parsed_default = json.loads(param['default_value'])
@@ -2905,9 +2905,12 @@ async def get_command_parameter_options(mythic: mythic_classes.Mythic, command_n
             elif param['type'] == "Boolean":
                 example_call[param['cli_name']] = False if param['default_value'] == "false" else True
             elif param['type'] == "Number":
-                example_call[param['cli_name']] = param['default_value']
+                example_call[param['cli_name']] = int(param['default_value'])
             elif param['type'] == "Array":
-                example_call[param['cli_name']] = json.loads(param['default_value'])
+                try:
+                    example_call[param['cli_name']] = json.loads(param['default_value'])
+                except Exception:
+                    example_call[param['cli_name']] = []
             elif param['type'] == "CredentialJson":
                 output += f"\t\t\tThis expects a reference to a credential stored in Mythic\n"
                 example_call[param['cli_name']] = "@cred:12"

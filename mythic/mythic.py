@@ -2782,7 +2782,7 @@ _COMMAND_PARAMETER_LLM_HELP = {
 
 
 async def get_command_parameter_options(mythic: mythic_classes.Mythic, command_name: str,
-                                        payload_type_name: str) -> Dict[str, List[dict]]:
+                                        payload_type_name: str) -> Dict[str, dict]:
     """
     Get every parameter group that can be used to task a command.
 
@@ -2852,7 +2852,10 @@ async def get_command_parameter_options(mythic: mythic_classes.Mythic, command_n
 
     parameters = response["commandparameters"]
     if len(parameters) == 0:
-        return {"Default": []}
+        return {"Default": {
+            "example": "just a raw string of the data to send if any",
+            "parameters": []
+        }}
 
     grouped_parameters = {}
     for parameter in sorted(
@@ -2868,7 +2871,75 @@ async def get_command_parameter_options(mythic: mythic_classes.Mythic, command_n
         if parameter["type"] in _COMMAND_PARAMETER_LLM_HELP:
             parameter["LLM_Help"] = _COMMAND_PARAMETER_LLM_HELP[parameter["type"]]
         grouped_parameters.setdefault(parameter["parameter_group_name"], []).append(parameter)
-
+    for group_name, group_parameters in grouped_parameters.items():
+        example_call = {}
+        output = ""
+        for param in group_parameters:
+            output += f"\tScripting Name: {param['cli_name']}\n"
+            output += f"\t\tRequired: {param['required']}\n"
+            output += f"\t\tParameter Type: {param['type']}\n"
+            if param['type'] == "String":
+                example_call[param['cli_name']] = param['default_value']
+            elif param['type'] == "ChooseOne" or param['type'] == "ChooseMultiple":
+                if param['dynamic_query_function'] != "":
+                    output += f"\t\t\tA function will be dynamically called to offer options for this command when the UI modal is displayed.\n"
+                if param['choices_are_all_commands']:
+                    output += f"\t\t\tThe choices for this are all commands for the agent (those built in and those not)\n"
+                if param["choices_are_loaded_commands"]:
+                    output += f"\t\t\tThe choices for this are all loaded commands for the callback\n"
+                if param["choice_filter_by_command_attributes"]:
+                    output += f"\t\t\tThe command options are further limited by certain attributes: {param['choices_filter_by_command_attributes']}\n"
+                try:
+                    if len(param['default_value']) > 0:
+                        parsed_default = json.loads(param['default_value'])
+                        example_call[param['cli_name']] = parsed_default
+                    else:
+                        example_call[param['cli_name']] = "" if param['type'] == 'ChooseOne' else []
+                except Exception:
+                    example_call[param['cli_name']] = "" if param['type'] == 'ChooseOne' else []
+                if len(param['choices']) > 0:
+                    output += f"\t\t\tThe available choices are: {param['choices']}\n"
+            elif param['type'] == "File":
+                output += "\t\t\tThe user will upload a file through the UI and get back a UUID, that UUID is supplied here.\n"
+                example_call[param['cli_name']] = "00000000-0000-0000-0000-000000000000"
+            elif param['type'] == "Boolean":
+                example_call[param['cli_name']] = False if param['default_value'] == "false" else True
+            elif param['type'] == "Number":
+                example_call[param['cli_name']] = param['default_value']
+            elif param['type'] == "Array":
+                example_call[param['cli_name']] = json.loads(param['default_value'])
+            elif param['type'] == "CredentialJson":
+                output += f"\t\t\tThis expects a reference to a credential stored in Mythic\n"
+                example_call[param['cli_name']] = "@cred:12"
+            elif param['type'] == "PayloadList":
+                output += "\t\t\tThe UI will show a list of available payloads to select from and the resulting payload UUID will be supplied here.\n"
+                if len(param['supported_agents']) > 0:
+                    output += f"\t\t\tThis is limited to the following agents: {param['supported_agents']}\n"
+                if len(param['supported_agent_build_parameters']) > 0:
+                    output += f"\t\t\tThe available agents are further restricted by build parameters: {param['supported_agent_build_parameters']}\n"
+                example_call[param['cli_name']] = "00000000-0000-0000-0000-000000000000"
+            elif param['type'] == "AgentConnect":
+                output += f"\t\t\tThis will populate the UI with a modal to select an existing callback or payload to connect to that has a P2P C2 Profile.\n"
+                output += f"\t\t\tThis value will be a reference to a callback or a payload.\n"
+                output += f"\t\t\t\tFor connecting to an existing callback: @link:callback=<callback_display_id>,c2=<p2p_c2_profile_name>.\n"
+                output += f"\t\t\t\tFor connecting to a payload running on a host: @link:payload=<payload_uuid>,host=<target_host>,c2=<p2p_c2_profile_name>\n"
+                example_call[param['cli_name']] = "@link:callback=3,c2=smb"
+            elif param['type'] == "LinkInfo":
+                output += f"\t\t\tThis will populate the UI with a modal to select an existing P2P connection for this callback.\n"
+                output += f"\t\t\tThis value consists of the edge id for the connection in the format @link:edge=<callback_graph_edge_id>.\n"
+                example_call[param['cli_name']] = "@link:edge=145"
+            elif param['type'] == "TypedArray":
+                output += f"\t\t\tThis is a nested array of data where the first part is a 'type' and the second part is the 'value'"
+                output += f"\t\t\tAvailable type choices are: {param['choices']}"
+                if len(param['choices']) > 0:
+                    example_call[param['cli_name']] = [[param['choices'][0], '']]
+                else:
+                    example_call[param['cli_name']] = []
+        output += f"\tAn example call would look like:\n{json.dumps(example_call, indent=2, sort_keys=True)}\n"
+        grouped_parameters[group_name] = {
+            "example": output,
+            "parameters": group_parameters,
+        }
     return grouped_parameters
 
 

@@ -1,6 +1,7 @@
 import base64
 import json
 import logging
+from contextlib import aclosing
 from datetime import datetime
 from typing import AsyncGenerator, List, Union
 import asyncio
@@ -658,13 +659,15 @@ async def waitfor_task_complete(
     """
     variables = {"task_display_id": task_display_id}
     try:
-        async for result in mythic_utilities.graphql_subscription(
-                mythic=mythic, query=subscription, variables=variables, timeout=timeout
-        ):
-            if len(result["task_stream"]) != 1:
-                raise Exception("task not found")
-            if "error" in result["task_stream"][0]["status"] or result["task_stream"][0]["completed"]:
-                return result["task_stream"][0]
+        subscription_results = mythic_utilities.graphql_subscription(
+            mythic=mythic, query=subscription, variables=variables, timeout=timeout
+        )
+        async with aclosing(subscription_results):
+            async for result in subscription_results:
+                if len(result["task_stream"]) != 1:
+                    raise Exception("task not found")
+                if "error" in result["task_stream"][0]["status"] or result["task_stream"][0]["completed"]:
+                    return result["task_stream"][0]
     except asyncio.TimeoutError:
         mythic.logger.warning("Timeout reached in timeout_generator")
         return {}
@@ -1065,12 +1068,14 @@ async def waitfor_payload_complete(
         """
     variables = {"uuid": payload_uuid}
     try:
-        async for result in mythic_utilities.graphql_subscription(
-                mythic=mythic, query=subscription, variables=variables, timeout=timeout
-        ):
-            if len(result["payload"]) > 0:
-                if result["payload"][0]["build_phase"] != "building":
-                    return result["payload"][0]
+        subscription_results = mythic_utilities.graphql_subscription(
+            mythic=mythic, query=subscription, variables=variables, timeout=timeout
+        )
+        async with aclosing(subscription_results):
+            async for result in subscription_results:
+                if len(result["payload"]) > 0:
+                    if result["payload"][0]["build_phase"] != "building":
+                        return result["payload"][0]
     except asyncio.TimeoutError:
         mythic.logger.warning("Timeout reached in timeout_generator")
         return
@@ -1227,12 +1232,14 @@ async def waitfor_for_task_output(
     variables = {"task_display_id": task_display_id}
     aggregated_output = []
     try:
-        async for result in mythic_utilities.graphql_subscription(
-                mythic=mythic, query=subscription, variables=variables, timeout=timeout
-        ):
-            aggregated_output = result["task_stream"][0]["responses"]
-            if "error" in result["task_stream"][0]["status"] or result["task_stream"][0]["completed"]:
-                break
+        subscription_results = mythic_utilities.graphql_subscription(
+            mythic=mythic, query=subscription, variables=variables, timeout=timeout
+        )
+        async with aclosing(subscription_results):
+            async for result in subscription_results:
+                aggregated_output = result["task_stream"][0]["responses"]
+                if "error" in result["task_stream"][0]["status"] or result["task_stream"][0]["completed"]:
+                    break
     except asyncio.TimeoutError:
         mythic.logger.warning("Timeout reached in timeout_generator")
     except StopAsyncIteration:

@@ -59,23 +59,40 @@ def get_headers(mythic: mythic_classes.Mythic) -> dict:
     return headers
 
 
+def get_ssl(mythic: mythic_classes.Mythic, websocket: bool = False):
+    """Return the ``ssl`` argument for aiohttp/gql connections to Mythic.
+
+    Plain http/ws gets False. With verify_ssl, https/wss gets a verifying context that trusts the system store, or
+    only the CAs in ssl_ca_file when set. Otherwise aiohttp gets False and websockets gets an explicit
+    non-verifying context (websockets verifies when given ssl=False on wss://).
+    """
+    if not mythic.ssl:
+        return False
+    if getattr(mythic, "verify_ssl", False):
+        ca_file = getattr(mythic, "ssl_ca_file", None)
+        return ssl.create_default_context(cafile=ca_file) if ca_file else ssl.create_default_context()
+    if not websocket:
+        return False
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+    return ssl_context
+
+
 async def get_http_transport(mythic: mythic_classes.Mythic) -> AIOHTTPTransport:
     transport = AIOHTTPTransport(
         url=f"{mythic.http}{mythic.server_ip}:{mythic.server_port}/graphql/",
         headers=get_headers(mythic),
-        ssl=False
+        ssl=get_ssl(mythic),
     )
     return transport
 
 
 async def get_ws_transport(mythic: mythic_classes.Mythic) -> WebsocketsTransport:
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
     websocket_transport = WebsocketsTransport(
         url=f"{mythic.ws}{mythic.server_ip}:{mythic.server_port}/graphql/",
         headers=get_headers(mythic),
-        ssl=ssl_context if mythic.ssl else False,
+        ssl=get_ssl(mythic, websocket=True),
     )
     return websocket_transport
 
@@ -84,7 +101,7 @@ async def http_post(mythic: mythic_classes.Mythic, data: dict, url: str) -> dict
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                url, json=data, headers=get_headers(mythic), ssl=False
+                url, json=data, headers=get_headers(mythic), ssl=get_ssl(mythic)
             ) as resp:
                 return await resp.json()
     except Exception as e:
@@ -97,7 +114,7 @@ async def http_post_form(
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                url, data=data, headers=get_headers(mythic), ssl=False
+                url, data=data, headers=get_headers(mythic), ssl=get_ssl(mythic)
             ) as resp:
                 return await resp.json()
     except Exception as e:
@@ -107,7 +124,7 @@ async def http_post_form(
 async def http_get_dictionary(mythic: mythic_classes.Mythic, url: str) -> dict:
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=get_headers(mythic), ssl=False) as resp:
+            async with session.get(url, headers=get_headers(mythic), ssl=get_ssl(mythic)) as resp:
                 return await resp.json()
     except Exception as e:
         raise e
@@ -116,7 +133,7 @@ async def http_get_dictionary(mythic: mythic_classes.Mythic, url: str) -> dict:
 async def http_get(mythic: mythic_classes.Mythic, url: str) -> bytes:
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=get_headers(mythic), ssl=False) as resp:
+            async with session.get(url, headers=get_headers(mythic), ssl=get_ssl(mythic)) as resp:
                 return await resp.content.read()
     except Exception as e:
         raise e
@@ -127,7 +144,7 @@ async def http_get_chunked(
 ) -> AsyncGenerator:
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=get_headers(mythic), ssl=False) as resp:
+            async with session.get(url, headers=get_headers(mythic), ssl=get_ssl(mythic)) as resp:
                 async for data in resp.content.iter_chunked(abs(chunk_size)):
                     yield data
     except Exception as e:

@@ -18,6 +18,8 @@ class Mythic:
         refresh_token: str = None,
         server_ip: str = None,
         ssl: bool = False,
+        verify_ssl: bool = False,
+        ssl_ca_file: str = None,
         server_port: int = None,
         global_timeout: int = None,
         schema: str = None,
@@ -33,6 +35,11 @@ class Mythic:
         self.server_ip = server_ip
         self.server_port = server_port
         self.ssl = ssl
+        # Verify the server certificate on https/wss connections. Off by default because Mythic
+        # installs a self-signed certificate; enable it when Mythic has a trusted certificate.
+        self.verify_ssl = verify_ssl
+        # Optional PEM file of CAs to trust instead of the system store (e.g. Mythic's own certificate).
+        self.ssl_ca_file = ssl_ca_file
         self.http = "http://" if not ssl else "https://"
         self.ws = "ws://" if not ssl else "wss://"
         self.global_timeout = global_timeout if global_timeout is not None else -1
@@ -59,6 +66,8 @@ class Mythic:
                 "server_ip": self.server_ip,
                 "server_port": self.server_port,
                 "ssl": self.ssl,
+                "verify_ssl": self.verify_ssl,
+                "ssl_ca_file": self.ssl_ca_file,
                 "current_operation_id": self.current_operation_id,
                 "create_apitoken": self.create_apitoken,
             },

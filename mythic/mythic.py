@@ -35,6 +35,8 @@ async def login(
         apitoken: str = None,
         create_apitoken: bool = False,
         ssl: bool = True,
+        verify_ssl: bool = False,
+        ssl_ca_file: str = None,
         timeout: int = -1,
         logging_level: int = logging.WARNING,
         log_format: str = LOG_FORMAT,
@@ -43,6 +45,8 @@ async def login(
     Create a new Mythic instance based on the connection information and attempt to validate the credentials.
     If a username and password is provided, this will log into Mythic and fetch/generate an API token to use for subsequent functions.
     If an api token is provided, this will validate that the api token is valid.
+    Set verify_ssl=True to verify Mythic's TLS certificate for every HTTP, GraphQL and websocket request.
+    Certificates are checked against the system trust store, or only against the CAs in ssl_ca_file if given.
     """
     mythic = mythic_classes.Mythic(
         username=username,
@@ -51,6 +55,8 @@ async def login(
         server_port=server_port,
         apitoken=apitoken,
         ssl=ssl,
+        verify_ssl=verify_ssl,
+        ssl_ca_file=ssl_ca_file,
         global_timeout=timeout,
         log_level=logging_level,
         log_format=log_format,
@@ -3061,7 +3067,7 @@ async def send_callback_agent_message_dict(mythic: mythic_classes.Mythic,
         async with session.post(
                 f"{mythic.http}{mythic.server_ip}:{mythic.server_port}/agent_message/",
                 data=message_to_send,
-                headers={"mythic": c2_profile}, ssl=False
+                headers={"mythic": c2_profile}, ssl=mythic_utilities.get_ssl(mythic)
         ) as resp:
             if resp.status == 404:
                 raise Exception("Mythic reject the message, check Mythic notifications")
@@ -3108,7 +3114,7 @@ async def send_callback_agent_message_base64(mythic: mythic_classes.Mythic,
         async with session.post(
                 f"{mythic.http}{mythic.server_ip}:{mythic.server_port}/agent_message/",
                 data=message,
-                headers={"mythic": c2_profile}, ssl=False
+                headers={"mythic": c2_profile}, ssl=mythic_utilities.get_ssl(mythic)
         ) as resp:
             if resp.status == 404:
                 raise Exception("Mythic rejected the message, check Mythic notifications")

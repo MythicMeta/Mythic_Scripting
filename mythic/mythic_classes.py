@@ -23,6 +23,7 @@ class Mythic:
         server_port: int = None,
         global_timeout: int = None,
         schema: str = None,
+        create_apitoken: bool = False,
         log_level: int = logging.WARNING,
         log_format: str = LOG_FORMAT,
     ):
@@ -42,9 +43,10 @@ class Mythic:
         self.http = "http://" if not ssl else "https://"
         self.ws = "ws://" if not ssl else "wss://"
         self.global_timeout = global_timeout if global_timeout is not None else -1
-        self.scripting_version = "0.2.8"
+        self.scripting_version = "0.3.0-rc8"
         self.current_operation_id = 0
         self.schema = schema
+        self.create_apitoken = create_apitoken
         self.log_level = log_level
         self.log_handler = logging.StreamHandler(sys.stdout)
         self.logger = logging.getLogger("mythic")
@@ -67,6 +69,7 @@ class Mythic:
                 "verify_ssl": self.verify_ssl,
                 "ssl_ca_file": self.ssl_ca_file,
                 "current_operation_id": self.current_operation_id,
+                "create_apitoken": self.create_apitoken,
             },
             indent=4,
         )

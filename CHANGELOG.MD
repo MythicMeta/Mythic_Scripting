@@ -10,6 +10,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Opt-in TLS certificate verification: `mythic.login(..., verify_ssl=True)` verifies Mythic's certificate for
   every HTTP, GraphQL and websocket request, against the system trust store or the CAs in `ssl_ca_file`
+  
+## [0.3.0-rc5] - 2026-07-09
+
+### Fixed
+
+- Updated `get_me` to call the current `whoami` Hasura action instead of the removed `meHook` field.
+- Fixed `set_password` to return the `updatePasswordAndEmail` action response.
+- Updated `register_file` to post to the current `/task_upload_file_webhook` route.
+
+### Changed
+
+- Documented the `file.write` scope needed by `register_file` when using scoped API tokens.
+
+## [0.3.0-rc1] - 2026-06-01
+
+### Changed
+
+- Updated the GraphQL client to use gql 4.0.0
+- Updated createAPIToken syntax
+- Updated Authorization header to always use Bearer with new Mythic APITokens
+- Only for Mythic v4.0.0+
 
 ## [0.2.10] - 2025-10-10
 

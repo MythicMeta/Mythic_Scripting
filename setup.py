@@ -11,7 +11,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="mythic",
-    version="0.3.0-rc9",
+    version="0.3.0rc10",
     description="Interact with Mythic C2 Framework Instances",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -25,6 +25,6 @@ setup(
     ],
     packages=["mythic"],
     include_package_data=True,
-    install_requires=["aiohttp", "asyncio", "gql[aiohttp,websockets]==4.0", "pycryptodome"],
+    install_requires=["aiohttp", "asyncio", "gql[aiohttp,websockets]>=4.0,<5", "pycryptodome"],
     entry_points={},
 )
